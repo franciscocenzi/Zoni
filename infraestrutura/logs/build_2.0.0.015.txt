@@ -1,0 +1,13 @@
+==================================================
+        ZÔNI V2 - NOTAS DE ATUALIZAÇÃO
+==================================================
+Build: 2.0.0.015
+
+PROBLEMAS RESOLVIDOS:
+- Registro de build corrigido: linha faltante adicionada ao `build.log`, mantendo histórico consistente com a versão 2.0.0.015.
+
+NOVIDADES:
+- Nenhuma nova funcionalidade nesta build; ajuste somente de logging/versão.
+
+PROBLEMAS CONHECIDOS:
+- Ainda é necessário reiniciar o QGIS caso o cache não reflita rapidamente as alterações de template ou dados.

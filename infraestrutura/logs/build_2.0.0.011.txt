@@ -1,0 +1,15 @@
+==================================================
+        ZÔNI V2 - NOTAS DE ATUALIZAÇÃO
+==================================================
+Build: 2.0.0.011
+
+PROBLEMAS RESOLVIDOS:
+- Resolvido o problema da versão presa no relatório HTML: A versão do plugin agora é lida dinamicamente do arquivo oculto raiz `metadata.txt` no momento de injetar no PDF, impedindo o Relatório de soltar as versões antigas estáticas de testes ("2.0.0.005").
+
+NOVIDADES:
+- Adicionado sistema de Monitoramento/Logs de Relatório: Agora, em `infraestrutura/logs`, cria-se arquivos de texto de linguagem acessível e legível (como este daqui) contendo "Patch Notes" a cada alteração da ferramenta. Ideal para verificar novidades e bugs em uso no escritório.
+- O Plugin agora armazena em arquivo as auditorias técnicas de compilação sem depender do QGIS Debug Console.
+
+PROBLEMAS CONHECIDOS:
+- O painel base do JSON precisa ser alimentado estruturalmente com as tabelas completas do Anexo III.
+- E o Relatório não atualiza de imediato no QGIS sem antes reiniciar o programa por completo devido ao "Cache Python" do QGIS nas pastas da infraestrutura de relatórios (renderizador). Em análise mitigatória.

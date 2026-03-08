@@ -1,0 +1,14 @@
+==================================================
+        ZÔNI V2 - NOTAS DE ATUALIZAÇÃO
+==================================================
+Build: 2.0.0.009
+
+PROBLEMAS RESOLVIDOS:
+- Resolvido o problema do logradouro parcial nos lotes desmembrados: Foi criada uma rotina inteligente que compara as Ruas do lote contra as *Testadas Oficiais* da prefeitura e se necessário mescla os nomes, permitindo que o Endereço Cadastral saia com o tipo completo, ex: "Rua Lúcio Joaquim Mendes".
+- Correção de leitura de campos no arquivo `.json` de Zoneamento de modo a exibir todos os parâmetros complementares como (Taxa de Permeabilidade da APP, etc)
+
+NOVIDADES:
+- Adicionado sistema de inibição de erros e coleta de dados brutos (`extrair_dados_cadastrais`) que capta todos os dados disponíveis mesmo quando a geometria falha.
+
+PROBLEMAS CONHECIDOS:
+- A Tabela de "Parâmetros Urbanísticos Aplicáveis" (Seção 6) ainda não renderiza os dados dentro do PDF do usuário caso a Área Geométrica do lote estoure erro matemático no sistema núcleo.

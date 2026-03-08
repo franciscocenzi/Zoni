@@ -1,0 +1,24 @@
+{
+  "app_faixa": {
+    "presente_obs": "Área de APP em faixa de curso d'água.",
+    "ausente_obs": "Sem APP de faixa de curso d'água identificada."
+  },
+  "app_mangue": {
+    "presente_obs": "Área de APP de manguezal identificada.",
+    "ausente_obs": "Sem APP de manguezal identificada."
+  },
+  "inundacao": {
+    "alta": "Requer Estudo Hidrológico e Hidráulico (EHH) detalhado. Considerar elevação do nível de piso.",
+    "media": "Recomenda-se análise hidrológica preliminar. Dimensionar drenagem para evento de 50 anos.",
+    "baixa": "Sistema de drenagem convencional geralmente adequado.",
+    "default": "Sem recomendações específicas.",
+    "sem_info": "Sem informações suficientes para recomendações específicas."
+  },
+  "movimento_massa": {
+    "alta": "Requer Estudo Geotécnico completo e projeto de contenção. Monitoramento obrigatório.",
+    "media": "Recomenda-se investigação geotécnica preliminar. Avaliar inclinação e tipo de solo.",
+    "baixa": "Procedimentos geotécnicos padrão geralmente suficientes.",
+    "default": "Sem recomendações específicas.",
+    "sem_info": "Sem informações suficientes para recomendações específicas."
+  }
+}

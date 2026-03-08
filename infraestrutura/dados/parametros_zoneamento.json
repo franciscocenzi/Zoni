@@ -1,0 +1,461 @@
+{
+  "SEMIEIXO": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 3.0,
+      "CA_max": 4.0,
+      "Tperm": 0.05,
+      "Tocup": 0.95,
+      "Npav_bas": 8,
+      "Npav_max": 24,
+      "Gab_bas": 28.0,
+      "Gab_max": 84.0,
+      "RF": 4.0,
+      "RLF": 0.0,
+      "HEMB": 19.95,
+      "vagas_min": 1
+    }
+  },
+  "Eixo de Acesso": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 3.0,
+      "CA_max": 4.5,
+      "Tperm": 0.05,
+      "Tocup": 0.95,
+      "Npav_bas": 8,
+      "Npav_max": 24,
+      "Gab_bas": 28.0,
+      "Gab_max": 84.0,
+      "RF": 16.5,
+      "RLF": 0.0,
+      "HEMB": 19.95,
+      "vagas_min": 1
+    }
+  },
+  "Eixo Orla": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 2.5,
+      "CA_max": 4.5,
+      "Tperm": 0.05,
+      "Tocup": 0.95,
+      "Npav_bas": 8,
+      "Npav_max": 24,
+      "Gab_bas": 28.0,
+      "Gab_max": 84.0,
+      "RF": 4.0,
+      "RLF": 0.0,
+      "HEMB": 19.95,
+      "vagas_min": 1
+    }
+  },
+  "EU1": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 3.0,
+      "CA_max": 4.5,
+      "Tperm": 0.05,
+      "Tocup": 0.95,
+      "Npav_bas": 8,
+      "Npav_max": 30,
+      "Gab_bas": 28.0,
+      "Gab_max": 105.0,
+      "RF": 13.5,
+      "RLF": 0.0,
+      "HEMB": 19.95,
+      "vagas_min": 1
+    }
+  },
+  "EU2": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 3.0,
+      "CA_max": 4.5,
+      "Tperm": 0.05,
+      "Tocup": 0.95,
+      "Npav_bas": 8,
+      "Npav_max": 24,
+      "Gab_bas": 28.0,
+      "Gab_max": 84.0,
+      "RF": 13.5,
+      "RLF": 0.0,
+      "HEMB": 19.95,
+      "vagas_min": 1
+    }
+  },
+  "EU3": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 3.0,
+      "CA_max": 4.0,
+      "Tperm": 0.05,
+      "Tocup": 0.95,
+      "Npav_bas": 8,
+      "Npav_max": 24,
+      "Gab_bas": 28.0,
+      "Gab_max": 84.0,
+      "RF": 5.0,
+      "RLF": 0.0,
+      "HEMB": 19.95,
+      "vagas_min": 1
+    }
+  },
+  "EU4": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 3.0,
+      "CA_max": 4.5,
+      "Tperm": 0.05,
+      "Tocup": 0.95,
+      "Npav_bas": 8,
+      "Npav_max": 24,
+      "Gab_bas": 28.0,
+      "Gab_max": 84.0,
+      "RF": 13.5,
+      "RLF": 0.0,
+      "HEMB": 19.95,
+      "vagas_min": 1
+    }
+  },
+  "MUQ1": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 1.0,
+      "CA_max": 1.0,
+      "Tperm": 0.4,
+      "Tocup": 0.5,
+      "Npav_bas": 2,
+      "Npav_max": 2,
+      "Gab_bas": 9.0,
+      "Gab_max": 9.0,
+      "RF": 4.0,
+      "RLF": 1.5,
+      "HEMB": null,
+      "vagas_min": 1
+    }
+  },
+  "MUQ3": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 2.5,
+      "CA_max": 4.0,
+      "Tperm": 0.05,
+      "Tocup": 0.95,
+      "Npav_bas": 8,
+      "Npav_max": 24,
+      "Gab_bas": 28.0,
+      "Gab_max": 84.0,
+      "RF": 4.0,
+      "RLF": 0.0,
+      "HEMB": 19.95,
+      "vagas_min": 1
+    }
+  },
+  "MUQ4": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 3.0,
+      "CA_max": 4.0,
+      "Tperm": 0.05,
+      "Tocup": 0.95,
+      "Npav_bas": 8,
+      "Npav_max": 24,
+      "Gab_bas": 28.0,
+      "Gab_max": 84.0,
+      "RF": 4.0,
+      "RLF": 0.0,
+      "HEMB": 19.95,
+      "vagas_min": 1
+    }
+  },
+  "MUCON1": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 1.0,
+      "CA_max": 1.0,
+      "Tperm": 0.1,
+      "Tocup": 0.6,
+      "Npav_bas": 2,
+      "Npav_max": 2,
+      "Gab_bas": 7.0,
+      "Gab_max": 7.0,
+      "RF": 4.0,
+      "RLF": 2.0,
+      "HEMB": null,
+      "vagas_min": 1
+    }
+  },
+  "MUCON2": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 2.5,
+      "CA_max": 4.0,
+      "Tperm": 0.05,
+      "Tocup": 0.75,
+      "Npav_bas": 2,
+      "Npav_max": 3,
+      "Gab_bas": 9.0,
+      "Gab_max": 12.0,
+      "RF": 4.0,
+      "RLF": 0.0,
+      "HEMB": 7.5,
+      "vagas_min": 1
+    }
+  },
+  "MUCON3": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 2.5,
+      "CA_max": 4.0,
+      "Tperm": 0.05,
+      "Tocup": 0.75,
+      "Npav_bas": 4,
+      "Npav_max": 6,
+      "Gab_bas": 14.0,
+      "Gab_max": 21.0,
+      "RF": 4.0,
+      "RLF": 0.0,
+      "HEMB": 7.5,
+      "vagas_min": 1
+    }
+  },
+  "MUCON4": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 2.5,
+      "CA_max": 4.0,
+      "Tperm": 0.05,
+      "Tocup": 0.75,
+      "Npav_bas": 6,
+      "Npav_max": 8,
+      "Gab_bas": 21.0,
+      "Gab_max": 28.0,
+      "RF": 4.0,
+      "RLF": 0.0,
+      "HEMB": 7.5,
+      "vagas_min": 1
+    }
+  },
+  "MUCON5": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 2.5,
+      "CA_max": 4.0,
+      "Tperm": 0.05,
+      "Tocup": 0.75,
+      "Npav_bas": 8,
+      "Npav_max": 10,
+      "Gab_bas": 28.0,
+      "Gab_max": 35.0,
+      "RF": 4.0,
+      "RLF": 0.0,
+      "HEMB": 10.5,
+      "vagas_min": 1
+    }
+  },
+  "MUCON6": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 6.0,
+      "CA_max": 8.0,
+      "Tperm": 0.05,
+      "Tocup": 0.95,
+      "Npav_bas": 8,
+      "Npav_max": 12,
+      "Gab_bas": 28.0,
+      "Gab_max": 42.0,
+      "RF": null,
+      "RLF": 0.0,
+      "HEMB": 10.5,
+      "vagas_min": 1
+    }
+  },
+  "MUCON7": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 2.5,
+      "CA_max": 4.0,
+      "Tperm": 0.05,
+      "Tocup": 0.75,
+      "Npav_bas": 2,
+      "Npav_max": 3,
+      "Gab_bas": 9.0,
+      "Gab_max": 12.0,
+      "RF": 4.0,
+      "RLF": 0.0,
+      "HEMB": 7.5,
+      "vagas_min": 1
+    }
+  },
+  "ZET": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 1.5,
+      "CA_max": 1.5,
+      "Tperm": 0.3,
+      "Tocup": 0.65,
+      "Npav_bas": 2,
+      "Npav_max": 3,
+      "Gab_bas": 7.0,
+      "Gab_max": 12.0,
+      "RF": null,
+      "RLF": 2.5,
+      "HEMB": null,
+      "vagas_min": 1
+    }
+  },
+  "ZEIS": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": null,
+      "CA_max": null,
+      "Tperm": null,
+      "Tocup": null,
+      "Npav_bas": null,
+      "Npav_max": null,
+      "Gab_bas": null,
+      "Gab_max": null,
+      "RF": null,
+      "RLF": null,
+      "HEMB": null,
+      "vagas_min": 1
+    }
+  },
+  "MUO": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 0.6,
+      "CA_max": 0.6,
+      "Tperm": 0.5,
+      "Tocup": 0.3,
+      "Npav_bas": 2,
+      "Npav_max": 2,
+      "Gab_bas": 9.0,
+      "Gab_max": 9.0,
+      "RF": 4.0,
+      "RLF": 4.0,
+      "HEMB": null,
+      "vagas_min": 1
+    }
+  },
+  "MUPA 1": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 0.6,
+      "CA_max": 0.6,
+      "Tperm": 0.5,
+      "Tocup": 0.3,
+      "Npav_bas": 2,
+      "Npav_max": 2,
+      "Gab_bas": 9.0,
+      "Gab_max": 9.0,
+      "RF": 4.0,
+      "RLF": 4.0,
+      "HEMB": null,
+      "vagas_min": 1
+    }
+  },
+  "ZEOT 1": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 1.5,
+      "CA_max": 1.5,
+      "Tperm": 0.15,
+      "Tocup": 0.75,
+      "Npav_bas": 3,
+      "Npav_max": 3,
+      "Gab_bas": 12.5,
+      "Gab_max": 12.5,
+      "RF": 4.0,
+      "RLF": 0.0,
+      "HEMB": 7.5,
+      "vagas_min": 1
+    }
+  },
+  "ZEOT 2": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 1.5,
+      "CA_max": 1.5,
+      "Tperm": 0.15,
+      "Tocup": 0.75,
+      "Npav_bas": 3,
+      "Npav_max": 3,
+      "Gab_bas": 12.5,
+      "Gab_max": 12.5,
+      "RF": 4.0,
+      "RLF": 0.0,
+      "HEMB": 7.5,
+      "vagas_min": 1
+    }
+  },
+  "ZEOT 3": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 0.3,
+      "CA_max": 0.3,
+      "Tperm": 0.8,
+      "Tocup": 0.2,
+      "Npav_bas": 2,
+      "Npav_max": 2,
+      "Gab_bas": 12.0,
+      "Gab_max": 12.0,
+      "RF": 4.0,
+      "RLF": 2.0,
+      "HEMB": null,
+      "vagas_min": 1
+    }
+  },
+  "MRO": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 0.3,
+      "CA_max": 0.3,
+      "Tperm": 0.8,
+      "Tocup": 0.2,
+      "Npav_bas": 2,
+      "Npav_max": 2,
+      "Gab_bas": 12.0,
+      "Gab_max": 12.0,
+      "RF": 4.0,
+      "RLF": 2.0,
+      "HEMB": null,
+      "vagas_min": 1
+    }
+  },
+  "MRPA": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 0.3,
+      "CA_max": 0.3,
+      "Tperm": 0.8,
+      "Tocup": 0.2,
+      "Npav_bas": 2,
+      "Npav_max": 2,
+      "Gab_bas": 12.0,
+      "Gab_max": 12.0,
+      "RF": 4.0,
+      "RLF": 2.0,
+      "HEMB": null,
+      "vagas_min": 1
+    }
+  },
+  "Setor Mineração": {
+    "indices": {
+      "CA_min": null,
+      "CA_bas": 0.3,
+      "CA_max": 0.3,
+      "Tperm": 0.8,
+      "Tocup": 0.2,
+      "Npav_bas": 2,
+      "Npav_max": 2,
+      "Gab_bas": 12.0,
+      "Gab_max": 12.0,
+      "RF": 4.0,
+      "RLF": 2.0,
+      "HEMB": null,
+      "vagas_min": 1
+    }
+  }
+}

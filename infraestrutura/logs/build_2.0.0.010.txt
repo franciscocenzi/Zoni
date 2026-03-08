@@ -1,0 +1,15 @@
+==================================================
+        ZÔNI V2 - NOTAS DE ATUALIZAÇÃO
+==================================================
+Build: 2.0.0.010
+
+PROBLEMAS RESOLVIDOS:
+- Resolvido de vez o mistério da Tabela de Zoneamento Vazia! Criado um sistema de "Failover Inteligente": agora, mesmo se o motor de cálculo da edificação falhar silenciosamente (por não conseguir determinar a matemática da área de um lote complexo no QGIS), a tabela captura brutalmente os parâmetros urbanísticos brutos e os joga no relatório, salvando a exportação.
+- Expansão de "Whitelist" (Lista de Segurança) de parâmetros: Agora o plugin aceita variações nos nomes das colunas de Parâmetros Urbanísticos no JSON (como `Hemb_max` e `RF_Sec`) sem jogar nenhum dado fora no momento de gerar os papéis.
+- Limpeza de scripts de laboratório off-line que ficaram perdidos na raiz do repositório (`test_zon` etc.).
+
+NOVIDADES:
+- Tabela HTML 100% à prova de falhas: se um parâmetro cair como `None`, ele é interpretado como "-" mantendo a estilização sem quebrar o layout.
+
+PROBLEMAS CONHECIDOS:
+- A Versão exibida no PDF de Relatório ainda estava "chumbada" (Hardcoded) no código anterior da v1.

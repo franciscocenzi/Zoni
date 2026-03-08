@@ -1,0 +1,16 @@
+==================================================
+        ZÔNI V2 - NOTAS DE ATUALIZAÇÃO
+==================================================
+Build: 2.0.0.008
+
+PROBLEMAS RESOLVIDOS:
+- Resolvido o problema das letras minúsculas (Case-Sensitivity) no carregamento das zonas, que impedia o relatório de identificar corretamente as siglas (ex: ZDE ao invés de zde).
+- Removido arquivo não utilizado da interface antiga `painel_principal.ui` para evitar confusão no código.
+- Limpeza de imports não utilizados em vários arquivos e remoção do `rulebook_notas.py` que estava obsoleto.
+
+NOVIDADES:
+- Implementado sistema de controle automático de versão (Auto Versioning). A cada alteração salva no código, a build do plugin agora é atualizada automaticamente no arquivo `metadata.txt`.
+
+PROBLEMAS CONHECIDOS:
+- Os parâmetros urbanísticos de algumas zonas ainda não aparecem na tabela do relatório HTML.
+- Determinados logradouros (ruas) estão saindo incompletos ("João da Silva" em vez de "Rua João da Silva") quando o lote não tem a rua preenchida na prefeitura.

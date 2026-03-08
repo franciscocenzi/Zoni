@@ -1,0 +1,15 @@
+==================================================
+        ZÔNI V2 - NOTAS DE ATUALIZAÇÃO
+==================================================
+Build: 2.0.0.012
+
+PROBLEMAS RESOLVIDOS:
+- Processamento de dados de zoneamento: Extração de tabelas do DOCX e conversão para formatos JSON estruturados para integração com o plugin.
+- Preparação da infraestrutura de dados para o Anexo III da Lei Complementar 275/2025.
+
+NOVIDADES:
+- Implementação inicial do `ZoneamentoResolvedor` para lidar com múltiplas zonas e regras de sobreposição.
+- Criação dos arquivos de parâmetros base (`parametros_zoneamento.json`).
+
+PROBLEMAS CONHECIDOS:
+- Algumas zonas com espaços no nome ("MUPA 1", "ZEOT 2") não estão sendo reconhecidas corretamente pelo motor de análise devido a divergências de formatação.

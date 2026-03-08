@@ -1,0 +1,16 @@
+==================================================
+        ZÔNI V2 - NOTAS DE ATUALIZAÇÃO
+==================================================
+Build: 2.0.0.013
+
+PROBLEMAS RESOLVIDOS:
+- Correção do Zoneamento no Relatório: Resolvido o problema onde os parâmetros urbanísticos apareciam como "-" no relatório HTML.
+- Normalização de Chaves: O motor agora remove espaços automaticamente ao buscar zonas ("MUPA 1" -> "MUPA1"), garantindo compatibilidade entre os dados do GIS e os arquivos JSON.
+- Migração de Dados: O plugin agora utiliza o arquivo `parametros_urbanisticos.json`, que é mais completo e fiel ao Anexo III da LC 275/2025.
+
+NOVIDADES:
+- Suporte a novos campos: Adicionada leitura e exibição de Recuo de Frente Secundário (`RF_Sec`), Gabarito Máximo (`Hemb_max`), Lote Mínimo e Testada Mínima no relatório.
+- Auditoria Técnica de Dados: Implementado script de verificação de integridade para garantir que todas as zonas críticas do município possuam parâmetros válidos carregados.
+
+PROBLEMAS CONHECIDOS:
+- O cache do QGIS ainda pode exigir reinicialização para refletir mudanças profundas na infraestrutura de renderização.

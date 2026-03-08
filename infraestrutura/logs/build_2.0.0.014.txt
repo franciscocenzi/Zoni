@@ -1,0 +1,14 @@
+==================================================
+        ZÔNI V2 - NOTAS DE ATUALIZAÇÃO
+==================================================
+Build: 2.0.0.014
+
+PROBLEMAS RESOLVIDOS:
+- Notas do Anexo III agora aparecem na seção de notas importantes do relatório, trazendo os textos completos de `notas_explicadas.json` conforme as notas listadas em `parametros_urbanisticos.json`.
+- Corrigido o processamento das condicionais do template HTML, evitando que blocos de notas/condicionantes fiquem escondidos mesmo quando há conteúdo.
+
+NOVIDADES:
+- Passamos a carregar as notas diretamente dos parâmetros urbanísticos, permitindo que cada zona leve suas notas para o relatório sem configuração manual.
+
+PROBLEMAS CONHECIDOS:
+- Zonas removidas do JSON de parâmetros continuam gerando mensagens no relatório se permanecerem na camada de zoneamento. Revisar dados do GIS quando houver divergência.

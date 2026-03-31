@@ -271,14 +271,21 @@ class ZoniPresenter:
         contexto = construir_contexto_relatorio(dados_lotes, analise)
         
         from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox
+        from qgis.core import QgsSettings
         import os
+        
+        settings = QgsSettings()
+        # Fallback to absolute HOME if settings empty
+        last_dir = settings.value("ZoniV2/last_export_dir", os.path.expanduser("~"), type=str)
         
         data_hora = datetime.now().strftime("%Y%m%d_%H%M%S")
         nome_sugerido = f"Zoni_v2_{data_hora}.docx"
+        caminho_inicial = os.path.join(last_dir, nome_sugerido)
+        
         file_path, _ = QFileDialog.getSaveFileName(
             self.iface.mainWindow(),
             "Salvar Relatório DOCX Oficial",
-            nome_sugerido,
+            caminho_inicial,
             "Documentos do Word (*.docx);;Todos os arquivos (*)",
         )
         if not file_path:
@@ -286,8 +293,11 @@ class ZoniPresenter:
         if not file_path.lower().endswith(".docx"):
             file_path += ".docx"
             
+        # Salva o diretório base para a próxima vez
+        settings.setValue("ZoniV2/last_export_dir", os.path.dirname(file_path))
+            
         renderizador = RenderizadorDOCX()
-        sucesso = renderizador.renderizar_e_salvar(contexto, file_path)
+        sucesso, erro_msg = renderizador.renderizar_e_salvar(contexto, file_path)
         
         if sucesso:
             res = QMessageBox.question(
@@ -298,6 +308,12 @@ class ZoniPresenter:
             )
             if res == QMessageBox.Yes:
                 os.startfile(file_path)
+        else:
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                "Erro de Geração",
+                f"Falha ao gerar o DOCX:\n{erro_msg}\n\nVerifique também os painéis de mensagens do QGIS."
+            )
 
     def _debug_app_faixa(self, camada_app, geom, etiqueta):
         if not (camada_app and geom):

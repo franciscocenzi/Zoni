@@ -109,18 +109,18 @@ class RenderizadorDOCX:
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
         self.modelo_path = os.path.join(self.base_dir, "modelos", "modelo_relatorio.docx")
 
-    def renderizar_e_salvar(self, contexto: dict, caminho_saida: str) -> bool:
+    def renderizar_e_salvar(self, contexto: dict, caminho_saida: str) -> tuple:
         """
         Lê o modelo base modelo_relatorio.docx, injeta os dados do contexto
         e salva no caminho de saída.
         """
         if 'docxtpl' not in sys.modules:
             QgsMessageLog.logMessage("Erro: Dependência docxtpl não foi instalada com sucesso.", "Zôni v2", Qgis.Critical)
-            return False
+            return False, "Dependência 'docxtpl' não está instalada ou falhou ao carregar."
 
         if not os.path.exists(self.modelo_path):
             QgsMessageLog.logMessage(f"Modelo não encontrado: {self.modelo_path}", "Zôni v2", Qgis.Critical)
-            return False
+            return False, f"Arquivo modelo não encontrado em:\n{self.modelo_path}"
             
         try:
             doc = DocxTemplate(self.modelo_path)
@@ -130,7 +130,8 @@ class RenderizadorDOCX:
             doc.render(ctx_pronto)
             doc.save(caminho_saida)
             QgsMessageLog.logMessage(f"Relatório gerado em: {caminho_saida}", "Zôni v2", Qgis.Success)
-            return True
+            return True, ""
         except Exception as e:
             QgsMessageLog.logMessage(f"Erro ao gerar DOCX: {e}", "Zôni v2", Qgis.Critical)
-            return False
+            return False, str(e)
+

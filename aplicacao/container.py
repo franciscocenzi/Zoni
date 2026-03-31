@@ -15,7 +15,7 @@ from ..infraestrutura.espacial.intersecao import ServicoIntersecao
 from ..infraestrutura.espacial.testadas import ServicoTestadas
 from ..infraestrutura.espacial.validadores import ValidadorGeometrias
 from ..infraestrutura.relatorios.construtor_relatorio import ConstrutorRelatorio
-from ..infraestrutura.relatorios.renderizador_html import RenderizadorHTML
+from ..infraestrutura.relatorios.renderizador_docx import RenderizadorDOCX
 
 
 @dataclass
@@ -60,7 +60,7 @@ class Container:
         
         # Relatórios
         self.construtor_relatorio = ConstrutorRelatorio()
-        self.renderizador_html = RenderizadorHTML()
+        self.renderizador_docx = RenderizadorDOCX()
         
         # Estado
         self.projeto = QgsProject.instance()

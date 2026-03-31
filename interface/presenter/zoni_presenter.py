@@ -18,7 +18,7 @@ from qgis.core import QgsProject
 # IMPORTS CORRETOS
 from ...dominio.motores.motor_analise_lote import CenarioEdificacao, analisar_lote
 from ...infraestrutura.relatorios.construtor_relatorio import construir_contexto_relatorio
-from ...infraestrutura.relatorios.renderizador_html import gerar_html_basico
+from ...infraestrutura.relatorios.renderizador_docx import RenderizadorDOCX
 from ...infraestrutura.espacial.config_camadas import registrar_camada
 from ...infraestrutura.espacial.validadores import lotes_sao_contiguos
 from ...infraestrutura.espacial.geometrias import unir_geometrias
@@ -269,8 +269,35 @@ class ZoniPresenter:
 
     def _gerar_relatorio(self, analise, dados_lotes, titulo):
         contexto = construir_contexto_relatorio(dados_lotes, analise)
-        html = gerar_html_basico(contexto)
-        self._mostrar_relatorio_html(html, titulo)
+        
+        from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox
+        import os
+        
+        data_hora = datetime.now().strftime("%Y%m%d_%H%M%S")
+        nome_sugerido = f"Zoni_v2_{data_hora}.docx"
+        file_path, _ = QFileDialog.getSaveFileName(
+            self.iface.mainWindow(),
+            "Salvar Relatório DOCX Oficial",
+            nome_sugerido,
+            "Documentos do Word (*.docx);;Todos os arquivos (*)",
+        )
+        if not file_path:
+            return
+        if not file_path.lower().endswith(".docx"):
+            file_path += ".docx"
+            
+        renderizador = RenderizadorDOCX()
+        sucesso = renderizador.renderizar_e_salvar(contexto, file_path)
+        
+        if sucesso:
+            res = QMessageBox.question(
+                self.iface.mainWindow(),
+                "Sucesso",
+                f"Relatório gerado em:\n{file_path}\n\nDeseja abrir o arquivo agora?",
+                QMessageBox.Yes | QMessageBox.No
+            )
+            if res == QMessageBox.Yes:
+                os.startfile(file_path)
 
     def _debug_app_faixa(self, camada_app, geom, etiqueta):
         if not (camada_app and geom):
@@ -404,33 +431,7 @@ class ZoniPresenter:
     # EXIBIÇÃO DO RELATÓRIO                                              #
     # ------------------------------------------------------------------ #
     def _mostrar_relatorio_html(self, html: str, titulo: str):
-        dlg = QDialog(self.iface.mainWindow())
-        dlg.setWindowTitle(titulo)
-        layout = QVBoxLayout(dlg)
-
-        button_layout = QHBoxLayout()
-
-        btn_salvar_pdf = QPushButton("💾 Salvar como PDF")
-        btn_salvar_pdf.clicked.connect(lambda: self._salvar_como_pdf(html, titulo))
-        button_layout.addWidget(btn_salvar_pdf)
-
-        btn_imprimir = QPushButton("🖨️ Imprimir")
-        btn_imprimir.clicked.connect(lambda: self._imprimir_html(html))
-        button_layout.addWidget(btn_imprimir)
-
-        btn_fechar = QPushButton("Fechar")
-        btn_fechar.clicked.connect(dlg.accept)
-        button_layout.addWidget(btn_fechar)
-
-        button_layout.addStretch()
-        layout.addLayout(button_layout)
-
-        visor = QTextBrowser(dlg)
-        visor.setHtml(html)
-        layout.addWidget(visor)
-
-        dlg.resize(950, 700)
-        dlg.exec_()
+        pass  # Depreciado pelo fluxo DOCX nativo
 
     def _salvar_como_pdf(self, html: str, titulo: str):
         """Salva o relatório HTML como arquivo PDF."""

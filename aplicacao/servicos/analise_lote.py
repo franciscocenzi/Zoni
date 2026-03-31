@@ -100,17 +100,18 @@ class ServicoAnaliseLote:
             caminho_parametros=self.container.config.caminho_parametros,
         )
     
-    def gerar_relatorio(
+    def gerar_relatorio_docx(
         self,
         resultado_analise: ResultadoAnaliseLote,
-        dados_lotes: List[dict]
-    ) -> str:
-        """Gera relatório HTML a partir do resultado da análise."""
+        dados_lotes: List[dict],
+        caminho_saida: str
+    ) -> bool:
+        """Gera relatório DOCX nativo a partir do resultado da análise."""
         contexto = self.container.construtor_relatorio.construir(
             dados_lote=dados_lotes,
             analise=resultado_analise
         )
-        return self.container.renderizador_html.renderizar(contexto)
+        return self.container.renderizador_docx.renderizar_e_salvar(contexto, caminho_saida)
     
     def _calcular_area_lote(self, feature: QgsFeature) -> float:
         """Calcula área do lote em m²."""

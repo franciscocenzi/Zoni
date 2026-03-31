@@ -1,645 +1,217 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório de Análise Urbanística - Zôni v2</title>
     <style>
-        /* ==================== VARIÁVEIS DE CORES E ESTILOS ==================== */
-        :root {
-            /* Paleta Principal - Blue Professional */
-            --color-primary: #1B4F8C;
-            --color-primary-light: #E8F1F7;
-            --color-primary-dark: #0F2F57;
-            
-            /* Cores Secundárias */
-            --color-accent: #D4814F;
-            --color-accent-light: #F5E8E0;
-            
-            /* Neutras */
-            --color-dark: #2C3E50;
-            --color-gray: #5D6D7B;
-            --color-gray-light: #E8EAED;
-            --color-gray-lighter: #F5F6F7;
-            --color-white: #FFFFFF;
-            
-            /* Status Colors */
-            --color-success: #27AE60;
-            --color-warning: #F39C12;
-            --color-danger: #E74C3C;
-            --color-info: #3498DB;
-            
-            /* Tipografia */
-            --font-family-base: 'Segoe UI', 'Calibri', 'Roboto', sans-serif;
-            --font-family-mono: 'Courier New', monospace;
-            --font-size-base: 12px;
-            --font-size-sm: 11px;
-            --font-size-xs: 10px;
-            --line-height-base: 1.6;
-            --line-height-compact: 1.4;
-            
-            /* Espaçamento */
-            --spacing-xs: 4px;
-            --spacing-sm: 8px;
-            --spacing-md: 12px;
-            --spacing-lg: 16px;
-            --spacing-xl: 24px;
-            --spacing-2xl: 32px;
-            
-            /* Bordas */
-            --border-radius: 4px;
-            --border-width: 1px;
-            --border-color: #D0D5DD;
+        /* CSS para layout de documento tipo Word/Docs */
+        @page {
+            size: A4;
+            margin: 20mm;
         }
-
-        /* ==================== RESET & BASE ==================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-        }
-
         body {
-            font-family: var(--font-family-base);
-            font-size: var(--font-size-base);
-            color: var(--color-dark);
-            background-color: var(--color-gray-lighter);
-            line-height: var(--line-height-base);
-            padding: 20px;
+            font-family: "Arial", sans-serif;
+            font-size: 11pt;
+            color: #000000;
+            background-color: #F0F2F5; /* Cinza para simular área externa do Docs */
             margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
-
-        /* ==================== CONTAINER ==================== */
         .container {
             max-width: 210mm;
             min-height: 297mm;
             margin: 0 auto;
-            background-color: var(--color-white);
-            padding: 20mm 15mm;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-            page-break-after: always;
+            background-color: #FFFFFF;
+            padding: 25mm 20mm; /* Margens padrão A4 aproximadas na tela */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Efeito de folha na web */
+            box-sizing: border-box;
         }
-
-        /* ==================== HEADER PROFISSIONAL ==================== */
-        .header-wrapper {
-            position: relative;
-            margin-bottom: var(--spacing-2xl);
-            padding-bottom: var(--spacing-xl);
-            border-bottom: 3px solid var(--color-primary);
+        @media print {
+            body {
+                background-color: #FFFFFF;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: none;
+                min-height: auto;
+            }
+            .no-print {
+                display: none !important;
+            }
+            @page {
+                size: A4;
+                margin: 2cm;
+            }
         }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .header-logo {
-            flex: 0 0 auto;
-            width: 60px;
-            height: 60px;
-        }
-
-        .header-logo svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        .header-content {
-            flex: 1;
+        
+        /* CABEÇALHO OFICIAL */
+        .header {
             text-align: center;
-            margin: 0 var(--spacing-xl);
+            margin-bottom: 24px;
         }
-
-        .header-institution {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--color-gray);
-            letter-spacing: 0.5px;
+        /* Caso queira colocar um SVG cru simulando um brasão em PB para n ficar feio */
+        .header svg {
+            margin-bottom: 8px;
+        }
+        .header p {
+            margin: 0;
+            font-weight: bold;
+            font-size: 11pt;
             text-transform: uppercase;
-            margin-bottom: var(--spacing-xs);
+        }
+        .header p.sub {
+            font-weight: normal;
         }
 
-        .header-department {
-            font-size: 10px;
-            color: var(--color-gray);
-            margin-bottom: var(--spacing-md);
-            font-style: italic;
-        }
-
-        .header-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--color-primary-dark);
+        /* TÍTULOS DO DOCUMENTO */
+        .doc-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 13pt; /* Pouco maior, padrão Word */
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .header-subtitle {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--color-accent);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .header-date {
-            text-align: right;
-            font-size: 10px;
-            color: var(--color-gray);
-            margin-top: var(--spacing-lg);
-        }
-
-        .header-date strong {
-            color: var(--color-dark);
-        }
-
-        /* ==================== ÍNDICE ==================== */
-        .toc-wrapper {
-            page-break-after: always;
-            margin-bottom: var(--spacing-2xl);
-            padding: var(--spacing-lg);
-            background-color: var(--color-primary-light);
-            border-radius: var(--border-radius);
-            border-left: 4px solid var(--color-primary);
-        }
-
-        .toc-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--color-primary);
-            text-transform: uppercase;
-            margin-bottom: var(--spacing-lg);
-            letter-spacing: 0.5px;
-        }
-
-        .toc-list {
-            list-style: none;
-        }
-
-        .toc-item {
-            margin-bottom: var(--spacing-md);
-            padding-left: 0;
-        }
-
-        .toc-item a {
-            font-size: 11px;
-            color: var(--color-primary);
-            text-decoration: none;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: baseline;
-        }
-
-        .toc-item a:hover {
-            color: var(--color-primary-dark);
             text-decoration: underline;
-            padding-left: 4px;
+            margin: 30px 0 6px 0;
         }
-
-        .toc-number {
-            font-weight: 600;
-            min-width: 25px;
-            color: var(--color-accent);
-        }
-
-        /* ==================== TIPOGRAFIA ==================== */
-        h1, h2, h3, h4, h5, h6 {
-            color: var(--color-primary-dark);
-            font-weight: 700;
-            margin-bottom: var(--spacing-md);
-        }
-
-        h1 {
-            font-size: 16px;
+        .doc-subtitle {
+            text-align: center;
+            font-size: 12pt;
+            font-weight: bold;
+            margin: 0 0 24px 0;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: var(--spacing-xl) 0 var(--spacing-lg) 0;
-            padding-bottom: var(--spacing-md);
-            border-bottom: 2px solid var(--color-primary);
         }
 
-        h2 {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            margin: var(--spacing-xl) 0 var(--spacing-md) 0;
-            padding-left: var(--spacing-md);
-            border-left: 4px solid var(--color-accent);
-            scroll-margin-top: 80px;
+        .meta-info {
+            text-align: center;
+            font-size: 10pt;
+            margin-bottom: 30px;
         }
 
-        h3 {
-            font-size: 12px;
-            color: var(--color-primary);
-            margin: var(--spacing-lg) 0 var(--spacing-md) 0;
-            padding-bottom: var(--spacing-xs);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        p {
-            margin-bottom: var(--spacing-md);
-            line-height: var(--line-height-base);
-        }
-
-        .small {
-            font-size: var(--font-size-sm);
-            color: var(--color-gray);
-            line-height: var(--line-height-compact);
-        }
-
-        /* ==================== SEÇÕES ==================== */
+        /* SEÇÕES */
         .section {
-            margin-bottom: var(--spacing-2xl);
-            padding: 0;
+            margin-bottom: 24px;
         }
-
-        /* ==================== TABELAS ==================== */
+        .section-title {
+            font-size: 11pt;
+            font-weight: bold;
+            text-decoration: underline;
+            text-transform: uppercase;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        
+        /* TABELAS OFICIAIS (Linhas pretas, sem fundo colorido) */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: var(--spacing-lg) 0;
-            font-size: var(--font-size-base);
-            background-color: var(--color-white);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 16px;
+            font-size: 11pt;
         }
-
-        table th {
-            background-color: var(--color-primary);
-            color: var(--color-white);
-            font-weight: 700;
-            padding: var(--spacing-md) var(--spacing-sm);
+        th, td {
+            border: 1pt solid #000000;
+            padding: 4px 8px;
             text-align: left;
-            font-size: var(--font-size-sm);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            border: 1px solid var(--color-primary-dark);
-        }
-
-        table td {
-            padding: var(--spacing-md) var(--spacing-sm);
-            border: 1px solid var(--border-color);
             vertical-align: middle;
         }
-
-        table tr:nth-child(even) td {
-            background-color: var(--color-gray-lighter);
+        th {
+            font-weight: bold;
+            background-color: transparent;
+        }
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
         }
 
-        table tr:hover td {
-            background-color: var(--color-primary-light);
+        /* TEXTOS GERAIS */
+        p {
+            margin-top: 0;
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+        .small-text {
+            font-size: 10pt;
+            color: #333;
+            margin-top: 4px;
+            text-align: left;
+        }
+        .list-group {
+            margin: 8px 0 16px 24px;
+            padding: 0;
+        }
+        .list-group li {
+            margin-bottom: 6px;
+            text-align: justify;
         }
 
-        /* ==================== CARDS & BOXES ==================== */
-        .card {
-            background-color: var(--color-white);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: var(--spacing-lg);
-            margin: var(--spacing-lg) 0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        /* DESTAQUES IMPORTANTES (Sem "caixas coloridas" de app) */
+        .alert-box {
+            border: 1pt solid #000000;
+            padding: 8px 12px;
+            margin-bottom: 16px;
         }
-
-        .card-header {
-            font-weight: 700;
-            color: var(--color-primary);
-            margin-bottom: var(--spacing-md);
-            font-size: 12px;
+        .alert-title {
+            font-weight: bold;
+            margin-bottom: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
         }
 
-        .highlight-box {
-            background-color: var(--color-primary-light);
-            border-left: 4px solid var(--color-primary);
-            padding: var(--spacing-lg);
-            margin: var(--spacing-lg) 0;
-            border-radius: 2px;
-        }
-
-        .warning-box {
-            background-color: #FFF8E1;
-            border-left: 4px solid var(--color-warning);
-            padding: var(--spacing-lg);
-            margin: var(--spacing-lg) 0;
-            border-radius: 2px;
-        }
-
-        .danger-box {
-            background-color: #FFEBEE;
-            border-left: 4px solid var(--color-danger);
-            padding: var(--spacing-lg);
-            margin: var(--spacing-lg) 0;
-            border-radius: 2px;
-        }
-
-        .success-box {
-            background-color: #E8F5E9;
-            border-left: 4px solid var(--color-success);
-            padding: var(--spacing-lg);
-            margin: var(--spacing-lg) 0;
-            border-radius: 2px;
-        }
-
-        /* ==================== BADGES & STATUS ==================== */
-        .badge {
-            display: inline-block;
-            padding: var(--spacing-xs) var(--spacing-sm);
-            font-size: 10px;
-            font-weight: 700;
-            border-radius: 3px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-        }
-
-        .badge-primary {
-            background-color: var(--color-primary);
-            color: var(--color-white);
-        }
-
-        .badge-success {
-            background-color: var(--color-success);
-            color: var(--color-white);
-        }
-
-        .badge-warning {
-            background-color: var(--color-warning);
-            color: var(--color-white);
-        }
-
-        .badge-danger {
-            background-color: var(--color-danger);
-            color: var(--color-white);
-        }
-
-        .badge-info {
-            background-color: var(--color-info);
-            color: var(--color-white);
-        }
-
-        .status {
-            font-weight: 700;
-            font-size: var(--font-size-sm);
-        }
-
-        .status-conforme { color: var(--color-success); }
-        .status-alerta { color: var(--color-warning); }
-        .status-nao-conforme { color: var(--color-danger); }
-        .status-neutro { color: var(--color-gray); }
-
-        /* ==================== LISTAS ==================== */
-        ul, ol {
-            margin: var(--spacing-md) 0 var(--spacing-md) var(--spacing-lg);
-            padding-left: var(--spacing-lg);
-        }
-
-        li {
-            margin-bottom: var(--spacing-sm);
-            line-height: var(--line-height-base);
-        }
-
-        .note-list {
-            margin-left: var(--spacing-xl);
-            list-style-position: outside;
-        }
-
-        .note-list li {
-            margin-bottom: var(--spacing-md);
-        }
-
-        /* ==================== RODAPÉ ==================== */
-        .footer {
-            margin-top: var(--spacing-2xl);
-            padding-top: var(--spacing-xl);
-            border-top: 2px solid var(--color-primary);
-            font-size: var(--font-size-xs);
-            color: var(--color-gray);
+        /* ASSINATURA */
+        .signature-block {
+            margin-top: 60px;
             text-align: center;
-            line-height: var(--line-height-compact);
+            page-break-inside: avoid;
         }
-
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--spacing-md);
-        }
-
-        .footer-left, .footer-right {
-            flex: 1;
-        }
-
-        .footer-center {
-            flex: 1;
-            text-align: center;
-        }
-
-        .page-number {
-            font-weight: 600;
-            color: var(--color-primary);
-        }
-
-        /* ==================== GRID HELPERS ==================== */
-        .two-column {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--spacing-lg);
-            margin: var(--spacing-lg) 0;
-        }
-
-        .three-column {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: var(--spacing-lg);
-            margin: var(--spacing-lg) 0;
-        }
-
-        .info-block {
-            background-color: var(--color-gray-lighter);
-            padding: var(--spacing-md);
-            border-radius: var(--border-radius);
-            border-left: 3px solid var(--color-primary);
-        }
-
-        .info-block-label {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--color-gray);
-            text-transform: uppercase;
-            margin-bottom: var(--spacing-xs);
-            letter-spacing: 0.3px;
-        }
-
-        .info-block-value {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--color-primary-dark);
-        }
-
-        /* ==================== QUEBRA DE PÁGINA ==================== */
-        .page-break {
-            page-break-after: always;
-            margin: var(--spacing-2xl) 0;
-        }
-
-        /* ==================== DEBUG ==================== */
-        .debug {
-            display: none;
-        }
-
-        /* ==================== IMPRESSÃO E PDF ==================== */
-        @page {
-            size: A4;
-            margin: 15mm 15mm 15mm 15mm;
-        }
-
-        @media print {
-            body {
-                background-color: var(--color-white);
-                padding: 0;
-                margin: 0;
-            }
-
-            .container {
-                max-width: 100%;
-                height: auto;
-                margin: 0;
-                padding: 0;
-                border: none;
-                box-shadow: none;
-                page-break-after: avoid;
-            }
-
-            .controls, button, .debug {
-                display: none !important;
-            }
-
-            h1, h2, h3, .section {
-                page-break-inside: avoid;
-                break-inside: avoid;
-            }
-
-            table {
-                page-break-inside: auto;
-            }
-
-            tr {
-                page-break-inside: avoid;
-                page-break-after: auto;
-            }
-
-            .badge, .status, .badge-primary, .badge-success, .badge-warning, .badge-danger {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-
-            /* Mostrar números de página em impressão */
-            .page-number {
-                display: block;
-            }
-        }
-
-        /* ==================== RESPONSIVIDADE ==================== */
-        @media (max-width: 768px) {
-            .two-column, .three-column {
-                grid-template-columns: 1fr;
-            }
-
-            .header-top {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .header-date {
-                text-align: center;
-                margin-top: var(--spacing-lg);
-            }
-
-            table {
-                font-size: var(--font-size-sm);
-            }
-
-            table th, table td {
-                padding: var(--spacing-sm);
-            }
+        .signature-line {
+            width: 60%;
+            border-top: 1pt solid #000000;
+            margin: 0 auto 6px auto;
         }
     </style>
 </head>
-
 <body>
+
+    <!-- CONTAINER QUE SIMULA A FOLHA NA WEB -->
     <div class="container">
-        <!-- ===================== HEADER PROFISSIONAL ===================== -->
-        <div class="header-wrapper">
-            <div class="header-top">
-                <div class="header-logo">
-                    <!-- Logo/Brasão -->
-                    <svg width="100%" height="100%" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M50 0L100 20V60C100 90 75 115 50 120C25 115 0 90 0 60V20L50 0Z" fill="#1B4F8C" />
-                        <path d="M50 15L85 30V60C85 80 65 100 50 105C35 100 15 80 15 60V30L50 15Z" fill="#FFFFFF" />
-                        <circle cx="50" cy="55" r="15" fill="#D4814F" />
-                    </svg>
-                </div>
-                <div class="header-content">
-                    <div class="header-institution">Prefeitura Municipal</div>
-                    <div class="header-department">Secretaria de Planejamento Urbano</div>
-                    <div class="header-title">Relatório de Análise Urbanística</div>
-                    <div class="header-subtitle">{TIPO_ANALISE}</div>
-                </div>
-                <div class="header-date">
-                    <div><strong>Emissão:</strong></div>
-                    <div>{DATA_COMPLETA} às {HORA}</div>
-                    <div style="margin-top: var(--spacing-md); font-weight: 600; color: var(--color-primary);">Zôni v2</div>
-                </div>
-            </div>
+        
+        <!-- CABEÇALHO (Brasão / Prefeitura) -->
+        <div class="header">
+            <!-- Um brasão simples PB genérico, simulando do Docs -->
+            <svg width="60" height="70" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 0L100 20V60C100 90 75 115 50 120C25 115 0 90 0 60V20L50 0Z" fill="#000000" />
+                <path d="M50 15L85 30V60C85 80 65 100 50 105C35 100 15 80 15 60V30L50 15Z" fill="#FFFFFF" />
+                <circle cx="50" cy="55" r="15" fill="#000000" />
+            </svg>
+            <p>PREFEITURA MUNICIPAL</p>
+            <p class="sub">SECRETARIA DE PLANEJAMENTO URBANO</p>
         </div>
 
-        <!-- ===================== ÍNDICE AUTOMÁTICO ===================== -->
-        <div class="toc-wrapper">
-            <div class="toc-title">📋 Sumário</div>
-            <ul class="toc-list">
-                <li class="toc-item"><a href="#sec-cadastrais"><span class="toc-number">1.</span> Dados Cadastrais</a></li>
-                <li class="toc-item"><a href="#sec-basicos"><span class="toc-number">2.</span> Dados Básicos do Lote/Gleba</a></li>
-                <li class="toc-item"><a href="#sec-limites"><span class="toc-number">3.</span> Limites do Terreno</a></li>
-                <li class="toc-item"><a href="#sec-zoneamentos"><span class="toc-number">4.</span> Zoneamentos Incidentes</a></li>
-                <li class="toc-item"><a href="#sec-intersecao"><span class="toc-number">5.</span> Interseção Zoneamento × Lote</a></li>
-                <li class="toc-item"><a href="#sec-parametros"><span class="toc-number">6.</span> Parâmetros Urbanísticos</a></li>
-                <li class="toc-item"><a href="#sec-app"><span class="toc-number">7.</span> Áreas de Preservação Permanente</a></li>
-                <li class="toc-item"><a href="#sec-riscos"><span class="toc-number">8.</span> Riscos Geoambientais</a></li>
-                <li class="toc-item"><a href="#sec-inclinacao"><span class="toc-number">9.</span> Inclinação do Terreno</a></li>
-                <li class="toc-item"><a href="#sec-notas"><span class="toc-number">10.</span> Notas e Condicionantes</a></li>
-            </ul>
+        <div class="doc-title">RELATÓRIO DE ANÁLISE URBANÍSTICA</div>
+        <div class="doc-subtitle">{TIPO_ANALISE}</div>
+        
+        <div class="meta-info">
+            Emissão: {DATA_COMPLETA} às {HORA}<br>
+            Automação: Zôni v2 ({VERSAO})
         </div>
 
-        <!-- ===================== SEÇÃO 1: DADOS CADASTRAIS ===================== -->
-        <div class="section" id="sec-cadastrais">
-            <h2>1. Dados Cadastrais</h2>
+        <!-- 1. DADOS CADASTRAIS -->
+        <div class="section">
+            <div class="section-title">1. DADOS CADASTRAIS</div>
             <table>
                 {DADOS_CADASTRAIS}
             </table>
         </div>
 
-        <!-- ===================== SEÇÃO 2: DADOS BÁSICOS ===================== -->
-        <div class="section" id="sec-basicos">
-            <h2>2. Dados Básicos do Lote/Gleba</h2>
+        <!-- 2. DADOS BÁSICOS DO LOTE -->
+        <div class="section">
+            <div class="section-title">2. DADOS BÁSICOS DO LOTE/GLEBA</div>
             <table>
                 <tr>
-                    <th width="40%">Tipo de Análise</th>
-                    <td>{TIPO_ANALISE}</td>
-                </tr>
-                <tr>
-                    <th>Quantidade de Lotes Considerados</th>
-                    <td>{N_LOTES}</td>
+                    <th width="50%">Quantidade de Lotes Considerados</th>
+                    <td width="50%">{N_LOTES}</td>
                 </tr>
                 <tr>
                     <th>Área Total Considerada (m²)</th>
@@ -656,192 +228,119 @@
             </table>
         </div>
 
-        <!-- ===================== SEÇÃO 3: LIMITES DO TERRENO ===================== -->
-        <div class="section" id="sec-limites">
-            <h2>3. Limites do Terreno (Testadas e Divisas)</h2>
-            <p class="small">
-                <strong>Testadas:</strong> limites do terreno com frente para logradouro público (rua, avenida, praça, servidão etc.)<br>
-                <strong>Divisas:</strong> limites em confrontação com outros imóveis, públicos ou privados
-            </p>
+        <!-- 3. LIMITES DO TERRENO -->
+        <div class="section">
+            <div class="section-title">3. LIMITES DO TERRENO (TESTADAS E DIVISAS)</div>
             <table>
                 <tr>
-                    <th>Limite / Logradouro</th>
-                    <th>Comprimento (m)</th>
+                    <th width="70%">Limite / Logradouro</th>
+                    <th width="30%">Comprimento (m)</th>
                 </tr>
                 {TABELA_TESTADAS}
             </table>
+            <p class="small-text">
+                <strong>Testadas:</strong> limites do terreno com frente para logradouro público (rua, avenida, praça, servidão etc.).<br>
+                <strong>Divisas:</strong> limites em confrontação com outros imóveis, públicos ou privados.
+            </p>
         </div>
 
-        <!-- ===================== SEÇÃO 4: ZONEAMENTOS INCIDENTES ===================== -->
-        <div class="section" id="sec-zoneamentos">
-            <h2>4. Zoneamentos Incidentes</h2>
+        <!-- 4. ZONEAMENTOS INCIDENTES -->
+        <div class="section">
+            <div class="section-title">4. ZONEAMENTOS INCIDENTES</div>
             <table>
                 {TABELA_ZONAS}
             </table>
-            
-            <div style="margin-top: var(--spacing-lg); display: flex; gap: var(--spacing-lg); flex-wrap: wrap;">
-                <span class="badge badge-primary">ORDINÁRIA</span>
-                <span class="badge badge-info">MACROZONA</span>
-                <span class="badge badge-warning">EIXO</span>
-                <span class="badge badge-danger">ESPECIAL</span>
-            </div>
-
-            <div class="highlight-box">
-                <div style="margin-bottom: var(--spacing-md);">
-                    <div style="font-weight: 700; color: var(--color-primary); font-size: 11px; text-transform: uppercase; margin-bottom: var(--spacing-xs);">Zona de Referência</div>
-                    <div style="font-size: 13px; color: var(--color-dark);">{ZONA_PRINCIPAL}</div>
-                </div>
-                <div>
-                    <div style="font-weight: 700; color: var(--color-primary); font-size: 11px; text-transform: uppercase; margin-bottom: var(--spacing-xs);">Observações</div>
-                    <div class="small">{JUSTIFICATIVA}</div>
-                </div>
+            <div style="margin-top: 12px; border: 1pt solid #000; padding: 8px;">
+                <p style="margin-bottom: 6px;"><strong>ZONA DE REFERÊNCIA ESPACIAL:</strong> {ZONA_PRINCIPAL}</p>
+                <p style="margin-bottom: 0;"><strong>OBSERVAÇÕES:</strong> {JUSTIFICATIVA}</p>
             </div>
         </div>
 
-        <!-- ===================== SEÇÃO 5: INTERSEÇÃO ZONEAMENTO × LOTE ===================== -->
-        <div class="section" id="sec-intersecao">
-            <h2>5. Interseção Zoneamento × Lote</h2>
+        <!-- 5. INTERSEÇÃO ZONEAMENTO X LOTE -->
+        <div class="section">
+            <div class="section-title">5. INTERSEÇÃO ZONEAMENTO × LOTE</div>
             <table>
                 {TABELA_INTERSECAO}
             </table>
         </div>
 
-        <!-- ===================== SEÇÃO 6: PARÂMETROS URBANÍSTICOS ===================== -->
-        <div class="section" id="sec-parametros">
-            <h2>6. Parâmetros Urbanísticos Aplicáveis</h2>
-
-            <!-- Coeficiente de Aproveitamento -->
-            <h3>Coeficiente de Aproveitamento (CA)</h3>
+        <!-- 6. PARÂMETROS URBANÍSTICOS -->
+        <div class="section">
+            <div class="section-title">6. PARÂMETROS URBANÍSTICOS APLICÁVEIS</div>
+            
+            <p><strong>Coeficiente de Aproveitamento (CA)</strong></p>
             <table>
                 <tr>
-                    <th width="60%">Parâmetro</th>
-                    <th width="40%">Valor</th>
+                    <th width="50%">Parâmetro</th>
+                    <th width="50%">Valor</th>
                 </tr>
-                <tr>
-                    <td>CA Mínimo</td>
-                    <td><strong>{CA_MIN}</strong></td>
-                </tr>
-                <tr>
-                    <td>CA Básico</td>
-                    <td><strong>{CA_BAS}</strong></td>
-                </tr>
-                <tr>
-                    <td>CA Máximo Ajustado</td>
-                    <td><strong>{CA_MAX_AJ}</strong></td>
-                </tr>
+                <tr><td>CA Mínimo</td><td><strong>{CA_MIN}</strong></td></tr>
+                <tr><td>CA Básico</td><td><strong>{CA_BAS}</strong></td></tr>
+                <tr><td>CA Máximo Ajustado</td><td><strong>{CA_MAX_AJ}</strong></td></tr>
             </table>
 
-            <!-- Taxas -->
-            <h3>Taxas de Solo</h3>
+            <p><strong>Taxas de Solo</strong></p>
             <table>
                 <tr>
-                    <th width="60%">Parâmetro</th>
-                    <th width="40%">Valor</th>
+                    <th width="50%">Parâmetro</th>
+                    <th width="50%">Valor</th>
                 </tr>
-                <tr>
-                    <td>Taxa de Permeabilidade do Solo (TPS)</td>
-                    <td><strong>{TPS}</strong></td>
-                </tr>
-                <tr>
-                    <td>Taxa de Ocupação do Solo (TOS)</td>
-                    <td><strong>{TOS}</strong></td>
-                </tr>
+                <tr><td>Taxa de Permeabilidade do Solo (TPS)</td><td><strong>{TPS}</strong></td></tr>
+                <tr><td>Taxa de Ocupação do Solo (TOS)</td><td><strong>{TOS}</strong></td></tr>
             </table>
 
-            <!-- Recuos -->
-            <h3>Recuos Obrigatórios</h3>
+            <p><strong>Recuos Obrigatórios</strong></p>
             <table>
                 <tr>
-                    <th width="60%">Parâmetro</th>
-                    <th width="40%">Valor</th>
+                    <th width="50%">Parâmetro</th>
+                    <th width="50%">Valor</th>
                 </tr>
-                <tr>
-                    <td>Recuo Frontal Mínimo</td>
-                    <td><strong>{RF}</strong></td>
-                </tr>
-                <tr>
-                    <td>Recuo Frontal com Espelho d'Água / Via Secundária</td>
-                    <td><strong>{RFU}</strong></td>
-                </tr>
-                <tr>
-                    <td>Recuos Laterais/Fundos</td>
-                    <td><strong>{RL}</strong></td>
-                </tr>
+                <tr><td>Recuo Frontal Mínimo</td><td><strong>{RF}</strong></td></tr>
+                <tr><td>Recuo Frontal (Eixo/Secundária)</td><td><strong>{RFU}</strong></td></tr>
+                <tr><td>Recuos Laterais/Fundos</td><td><strong>{RL}</strong></td></tr>
             </table>
 
-            <!-- Edificação -->
-            <h3>Parâmetros de Edificação</h3>
+            <p><strong>Parâmetros de Edificação</strong></p>
             <table>
                 <tr>
-                    <th width="60%">Parâmetro</th>
-                    <th width="40%">Valor</th>
+                    <th width="50%">Parâmetro</th>
+                    <th width="50%">Valor</th>
                 </tr>
-                <tr>
-                    <td>Nº de Pavimentos Básico</td>
-                    <td><strong>{NP_BAS}</strong></td>
-                </tr>
-                <tr>
-                    <td>Nº de Pavimentos Máximo Ajustado</td>
-                    <td><strong>{NP_MAX_AJ}</strong></td>
-                </tr>
-                <tr>
-                    <td>Altura Máxima de Embasamento (m)</td>
-                    <td><strong>{HEMB}</strong></td>
-                </tr>
-                <tr>
-                    <td>Vagas Mínimas Estimadas</td>
-                    <td><strong>{VAGAS}</strong></td>
-                </tr>
+                <tr><td>Nº de Pavimentos Básico</td><td><strong>{NP_BAS}</strong></td></tr>
+                <tr><td>Nº de Pavimentos Máximo Ajustado</td><td><strong>{NP_MAX_AJ}</strong></td></tr>
+                <tr><td>Altura Máxima Embasamento (m)</td><td><strong>{HEMB}</strong></td></tr>
+                <tr><td>Vagas Mínimas</td><td><strong>{VAGAS}</strong></td></tr>
             </table>
-
-            <div class="warning-box">
-                <p><strong>ℹ️ Notas Técnicas Importantes:</strong></p>
-                <ul style="margin: 0; padding-left: var(--spacing-xl);">
-                    <li><strong>Nota (3):</strong> Caso haja aberturas voltadas para limites laterais ou de fundos, aplica-se a regra específica prevista na nota (3) da tabela de parâmetros urbanísticos (Anexo III da LC 275/2025).</li>
-                    <li><strong>Nota (13):</strong> Quando houver torre recuada sobre embasamento, o recuo frontal da torre deve ser calculado conforme a fórmula indicada na nota (13) da mesma tabela.</li>
-                </ul>
-            </div>
         </div>
 
-        <!-- ===================== SEÇÃO 7: ÁREAS DE PRESERVAÇÃO PERMANENTE ===================== -->
-        <div class="section" id="sec-app">
-            <h2>7. Áreas de Preservação Permanente (APP)</h2>
-            <p class="small" style="margin-bottom: var(--spacing-lg);">
-                Verificação de sobreposição com camadas de APP conforme legislação ambiental federal e estadual.
-            </p>
+        <!-- 7. ÁREAS DE PRESERVAÇÃO PERMANENTE -->
+        <div class="section">
+            <div class="section-title">7. ÁREAS DE PRESERVAÇÃO PERMANENTE (APP)</div>
             <table>
                 <tr>
                     <th width="25%">Tipo de APP</th>
-                    <th width="15%">Status</th>
-                    <th width="20%">Largura Faixa</th>
+                    <th width="20%">Status</th>
+                    <th width="15%">Largura</th>
                     <th width="40%">Observações</th>
                 </tr>
                 <tr>
-                    <td><strong>Faixa NUIC (curso d'água)</strong></td>
-                    <td><span class="badge badge-primary {APP_FAIXA_CLASSE}">{APP_FAIXA_STATUS}</span></td>
+                    <td>Faixa NUIC (curso d'água)</td>
+                    <td><strong>{APP_FAIXA_STATUS}</strong></td>
                     <td>{APP_FAIXA_LARGURA}</td>
                     <td>{APP_FAIXA_OBS}</td>
                 </tr>
                 <tr>
-                    <td><strong>Manguezal</strong></td>
-                    <td><span class="badge badge-primary {APP_MANGUE_CLASSE}">{APP_MANGUE_STATUS}</span></td>
+                    <td>Manguezal</td>
+                    <td><strong>{APP_MANGUE_STATUS}</strong></td>
                     <td>—</td>
                     <td>{APP_MANGUE_OBS}</td>
                 </tr>
             </table>
-            <p class="small" style="margin-top: var(--spacing-lg);">
-                <strong>Fontes de dados:</strong><br>
-                • Camadas AMFRI_PB_LLNUIAPP e AMFRI_PB_Area_Manguezal (AMFRI/UFPB)<br>
-                • Lei Federal nº 12.651/2012 (Código Florestal Brasileiro)
-            </p>
         </div>
 
-        <!-- ===================== SEÇÃO 8: RISCOS GEOAMBIENTAIS ===================== -->
-        <div class="section" id="sec-riscos">
-            <h2>8. Riscos Geoambientais</h2>
-            <p class="small" style="margin-bottom: var(--spacing-lg);">
-                Mapeamento de suscetibilidade do terreno a inundação e movimento de massa conforme dados da AMFRI.
-            </p>
+        <!-- 8. RISCOS GEOAMBIENTAIS -->
+        <div class="section">
+            <div class="section-title">8. RISCOS GEOAMBIENTAIS</div>
             <table>
                 <tr>
                     <th width="20%">Tipo de Risco</th>
@@ -850,144 +349,93 @@
                     <th width="50%">Recomendações</th>
                 </tr>
                 <tr>
-                    <td><strong>Inundação</strong></td>
+                    <td>Inundação</td>
                     <td>{RISCO_INUND_CLASSE}</td>
-                    <td><span class="status {RISCO_INUND_COR}"><strong>{RISCO_INUND_GRAU}</strong></span></td>
+                    <td><strong>{RISCO_INUND_GRAU}</strong></td>
                     <td>{RISCO_INUND_RECOM}</td>
                 </tr>
                 <tr>
-                    <td><strong>Movimento de Massa</strong></td>
+                    <td>Movimento de Massa</td>
                     <td>{RISCO_MOV_CLASSE}</td>
-                    <td><span class="status {RISCO_MOV_COR}"><strong>{RISCO_MOV_GRAU}</strong></span></td>
+                    <td><strong>{RISCO_MOV_GRAU}</strong></td>
                     <td>{RISCO_MOV_RECOM}</td>
                 </tr>
             </table>
-            <p class="small" style="margin-top: var(--spacing-lg);">
-                <strong>Fontes de dados:</strong><br>
-                • Camadas AMFRI_PB_Suscetibilidade_Inundacao e AMFRI_PB_Suscetibilidade_Movimento_Massa (AMFRI/UFPB)
-            </p>
         </div>
 
-        <!-- ===================== SEÇÃO 9: INCLINAÇÃO DO TERRENO ===================== -->
-        <div class="section" id="sec-inclinacao">
-            <h2>9. Inclinação do Terreno</h2>
-            <p class="small" style="margin-bottom: var(--spacing-lg);">
-                Análise hipsométrica do lote com classificação em faixas de declividade conforme legislação ambiental.
-            </p>
+        <!-- 9. INCLINAÇÃO DO TERRENO -->
+        <div class="section">
+            <div class="section-title">9. INCLINAÇÃO DO TERRENO</div>
             <table>
                 <tr>
                     <th width="25%">Faixa de Inclinação</th>
-                    <th width="12%">Cor</th>
-                    <th width="18%">Área (m²)</th>
+                    <th width="15%">Cores Opcionais</th>
+                    <th width="15%">Área (m²)</th>
                     <th width="15%">% da Área</th>
-                    <th width="30%">Classificação</th>
+                    <th width="30%">Notas</th>
                 </tr>
                 {TABELA_INCLINACAO}
             </table>
-            
-            <div style="margin-top: var(--spacing-lg);">
-                <p class="small"><strong>Legenda de Cores:</strong></p>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-md); margin-top: var(--spacing-md);">
-                    <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 24px; height: 24px; background-color: #1a9641;"></span> <span class="small">≤ 3° (Plano)</span></div>
-                    <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 24px; height: 24px; background-color: #fbfdbc;"></span> <span class="small">3°-8° (Suave)</span></div>
-                    <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 24px; height: 24px; background-color: #fee4a1;"></span> <span class="small">8°-15° (Moderado)</span></div>
-                    <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 24px; height: 24px; background-color: #fec981;"></span> <span class="small">15°-30° (Forte)</span></div>
-                    <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 24px; height: 24px; background-color: #fdae61;"></span> <span class="small">30°-45° (Muito Forte)</span></div>
-                    <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 24px; height: 24px; background-color: #d7191c;"></span> <span class="small">> 45° (APP)</span></div>
-                </div>
-            </div>
-            
-            <div class="success-box" style="margin-top: var(--spacing-lg);">
-                <p class="small"><strong>ℹ️ Legislação Ambiental:</strong> Conforme Lei Federal nº 12.651/2012 (Código Florestal Brasileiro), áreas com inclinação superior a 45° são consideradas Áreas de Preservação Permanente e possuem restrições especiais ao uso e ocupação.</p>
-            </div>
+            <p class="small-text">Áreas com inclinação > 45° são consideradas APP (Código Florestal Federal).</p>
         </div>
 
-        <!-- ===================== SEÇÃO 10: NOTAS E CONDICIONANTES ===================== -->
-        <div class="section" id="sec-notas">
-            <h2>10. Notas e Condicionantes Aplicadas</h2>
+        <!-- 10. NOTAS E CONDICIONANTES -->
+        <div class="section">
+            <div class="section-title">10. NOTAS E CONDICIONANTES APLICADAS</div>
 
-            <!-- Notas Técnicas do Anexo III -->
             {if LISTA_NOTAS_ANEXO}
-            <div class="highlight-box">
-                <p style="font-weight: 700; color: var(--color-primary); font-size: 11px; text-transform: uppercase; margin-bottom: var(--spacing-md);">📌 Notas Técnicas do Anexo III (LC 275/2025)</p>
-                <ul class="note-list">
+            <div class="alert-box">
+                <div class="alert-title">NOTAS TÉCNICAS DO ANEXO III DA LEI COMPLEMENTAR</div>
+                <ul class="list-group">
                     {LISTA_NOTAS_ANEXO}
                 </ul>
             </div>
             {endif}
 
-            <!-- Condicionantes Urbanísticas -->
             {if LISTA_CONDICIONANTES}
-            <div class="highlight-box">
-                <p style="font-weight: 700; color: var(--color-primary); font-size: 11px; text-transform: uppercase; margin-bottom: var(--spacing-md);">⚡ Condicionantes Urbanísticas</p>
-                <ul class="note-list">
+            <div class="alert-box">
+                <div class="alert-title">CONDICIONANTES URBANÍSTICAS</div>
+                <ul class="list-group">
                     {LISTA_CONDICIONANTES}
                 </ul>
             </div>
             {endif}
 
-            <!-- Restrições e Pendências -->
             {if LISTA_RESTRICOES}
-            <div class="danger-box">
-                <p style="font-weight: 700; color: #B71C1C; font-size: 11px; text-transform: uppercase; margin-bottom: var(--spacing-md);">⚠️ Restrições e Pendências</p>
-                <ul class="note-list">
+            <div class="alert-box" style="border: 2pt solid #000000;">
+                <div class="alert-title">RESTRIÇÕES E PENDÊNCIAS IMPEDITIVAS</div>
+                <ul class="list-group">
                     {LISTA_RESTRICOES}
                 </ul>
             </div>
             {endif}
 
-            <!-- Observações Gerais (compatibilidade) -->
             {if LISTA_NOTAS}
-            <div class="highlight-box">
-                <p style="font-weight: 700; color: var(--color-primary); font-size: 11px; text-transform: uppercase; margin-bottom: var(--spacing-md);">📄 Observações Gerais</p>
-                <ul class="note-list">
+            <div class="alert-box">
+                <div class="alert-title">OBSERVAÇÕES GERAIS / MANUAL ZÔNI</div>
+                <ul class="list-group">
                     {LISTA_NOTAS}
                 </ul>
             </div>
             {endif}
         </div>
 
-        <!-- ===================== RODAPÉ ===================== -->
-        <div class="footer">
-            <div class="footer-content">
-                <div class="footer-left">
-                    <strong>Lei Complementar nº 275/2025</strong><br>
-                    Plano Diretor Municipal
-                </div>
-                <div class="footer-center">
-                    Sistema Zôni v2 ({VERSAO})<br>
-                    <span class="page-number">Página <span class="page-number-current">1</span></span>
-                </div>
-                <div class="footer-right">
-                    {DATA_COMPLETA}<br>
-                    Emissão: {HORA}
-                </div>
-            </div>
-            <p style="margin-top: var(--spacing-md); font-size: 9px; line-height: 1.4; color: var(--color-gray);">
-                <em>Este é um documento técnico gerado por aproximação georreferenciada e análise automatizada. Para decisões formais, consulte a base cartográfica oficial, a legislação vigente e solicite análise presencial da Prefeitura Municipal.</em>
-            </p>
+        <div style="margin-top: 40px; border-top: 1pt solid #000; padding-top: 8px; font-size: 9pt; text-align: justify;">
+            <em>Este relatório técnico automatizado emite parecer preliminar embasado nas informações georreferenciadas vigentes na data especificada. Não substitui, em hipótese alguma, a emissão ou ratificação em vias legais municipais conforme regimento interno de planejamento da cidade. Em caso de dúvidas, consulte o balcão da Secretaria de Planejamento.</em>
         </div>
+
     </div>
-
+    
     <script>
-        // Auto-update page numbers for printing
-        function updatePageNumbers() {
-            if (typeof window !== 'undefined' && window.print) {
-                document.addEventListener('beforeprint', function() {
-                    var containers = document.querySelectorAll('.container');
-                    containers.forEach(function(container, index) {
-                        var pageNum = container.querySelector('.page-number-current');
-                        if (pageNum) {
-                            pageNum.textContent = index + 1;
-                        }
-                    });
-                });
-            }
-        }
-        
-        document.addEventListener('DOMContentLoaded', updatePageNumbers);
+        document.addEventListener('DOMContentLoaded', function () {
+            var elements = document.querySelectorAll('.alert-box');
+            elements.forEach(function (el) {
+                var ul = el.querySelector('ul.list-group');
+                if (ul && (ul.innerHTML.trim() === '' || ul.innerHTML.indexOf('<li>Nenhum</li>') !== -1)) {
+                    el.style.display = 'none';
+                }
+            });
+        });
     </script>
-
 </body>
-
 </html>

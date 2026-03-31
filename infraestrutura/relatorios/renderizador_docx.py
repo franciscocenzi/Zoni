@@ -14,7 +14,11 @@ try:
 except ImportError:
     QgsMessageLog.logMessage("Módulo docxtpl ausente. Iniciando instalação silenciosa no QGIS...", "Zôni v2", Qgis.Warning)
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "docxtpl"])
+        # sys.executable retorna o qgis-bin.exe no Windows
+        python_exe = os.path.join(sys.prefix, 'python.exe')
+        if not os.path.exists(python_exe):
+            python_exe = "python"
+        subprocess.check_call([python_exe, "-m", "pip", "install", "docxtpl"])
         from docxtpl import DocxTemplate
         QgsMessageLog.logMessage("docxtpl instalado com sucesso.", "Zôni v2", Qgis.Success)
     except Exception as e:

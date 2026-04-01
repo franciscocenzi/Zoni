@@ -33,10 +33,10 @@ def aplicar_estilo_amigavel(doc):
     except Exception:
         pass
 
-def adicionar_tabela_jinja(doc, cols, row_headers, list_var_name, fields_mapped):
+def adicionar_tabela_jinja(doc, cols, row_headers, list_var_name, fields_mapped, style='Table Grid'):
     """Cria uma tabela no Word com um loop jinja mágico."""
     table = doc.add_table(rows=2, cols=cols)
-    table.style = 'Table Grid'
+    table.style = style
     
     # Cabeçalho
     hdr_cells = table.rows[0].cells
@@ -98,47 +98,65 @@ def construir_modelo_zoni(doc):
     
     # 3. ZONEAMENTO E ÍNDICES
     doc.add_paragraph("3. ZONEAMENTO INCIDENTE", style=style_h)
-    # Tabela estática de índices
-    t_z = doc.add_table(rows=6, cols=2)
-    t_z.style = 'Table Grid'
-    pares = [
-        ("C.A. Máximo", "{{ CA_MAX_AJ }}"),
-        ("C.A. Básico", "{{ CA_BAS }}"),
-        ("Taxa Permeabilidade (TPS)", "{{ TPS }}"),
-        ("Taxa de Ocupação (TOS)", "{{ TOS }}"),
-        ("Recuo Frontal", "{{ RF }}"),
-        ("Nº de Pavimentos", "{{ NP_BAS }}"),
-    ]
-    for i, (k, v) in enumerate(pares):
-        t_z.rows[i].cells[0].text = k
-        t_z.rows[i].cells[1].text = v
+    adicionar_tabela_jinja(doc, 10, 
+        ["Zona", "Área", "%", "C.A max", "C.A bas", "TPS (Perm)", "TOS (Ocup)", "Pav Bas", "Pav Max", "Recuo Fr"],
+        "TABELA_ZONAS_LIST",
+        ["row.codigo", "row.area", "row.perc", "row.ca_max", "row.ca_bas", "row.tps", "row.tos", "row.np_bas", "row.np_max", "row.rf"]
+    )
     doc.add_paragraph()
     
     # 4. ÁREAS DE PRESERVAÇÃO PERMANENTE (APP)
     doc.add_paragraph("4. ÁREAS DE PRESERVAÇÃO PERMANENTE (APP)", style=style_h)
-    doc.add_paragraph("Faixa NUIC: {{ APP_FAIXA_STATUS }} ({{ APP_FAIXA_LARGURA }}) - {{ APP_FAIXA_OBS }}")
+    doc.add_paragraph("Faixa NUIC: {{ APP_FAIXA_STATUS }} ({{ APP_FAIXA_LARGURA }} m) - {{ APP_FAIXA_OBS }}")
     doc.add_paragraph("Manguezal: {{ APP_MANGUE_STATUS }} - {{ APP_MANGUE_OBS }}")
     doc.add_paragraph()
     
     # 5. RISCOS GEOAMBIENTAIS
     doc.add_paragraph("5. RISCOS GEOAMBIENTAIS", style=style_h)
-    doc.add_paragraph("Risco de Inundação: {{ RISCO_INUND_CLASSE }} - Grau: {{ RISCO_INUND_GRAU }}")
-    doc.add_paragraph("Recomendação: {{ RISCO_INUND_RECOM }}")
-    doc.add_paragraph("Risco Movimento Massa: {{ RISCO_MOV_CLASSE }} - Grau: {{ RISCO_MOV_GRAU }}")
-    doc.add_paragraph("Recomendação: {{ RISCO_MOV_RECOM }}")
+    
+    t_r = doc.add_table(rows=3, cols=4)
+    t_r.style = 'Normal Table'
+    t_r.rows[0].cells[0].merge(t_r.rows[0].cells[1])
+    t_r.rows[0].cells[0].text = "Suscetibilidade a Inundação"
+    t_r.rows[0].cells[2].merge(t_r.rows[0].cells[3])
+    t_r.rows[0].cells[2].text = "Suscetibilidade a Movimentos de Massa"
+    for cell in t_r.rows[0].cells:
+        for p in cell.paragraphs:
+            for run in p.runs:
+                run.font.bold = True
+                
+    # Celula 1
+    t_r.rows[1].cells[0].text = "{% cellbg RISCO_INUND_COR %} "
+    t_r.rows[1].cells[1].text = "{{ RISCO_INUND_GRAU }}"
+    t_r.rows[2].cells[0].merge(t_r.rows[2].cells[1])
+    t_r.rows[2].cells[0].text = "{{ RISCO_INUND_RECOM }}"
+    # Celula 2
+    t_r.rows[1].cells[2].text = "{% cellbg RISCO_MOV_COR %} "
+    t_r.rows[1].cells[3].text = "{{ RISCO_MOV_GRAU }}"
+    t_r.rows[2].cells[2].merge(t_r.rows[2].cells[3])
+    t_r.rows[2].cells[2].text = "{{ RISCO_MOV_RECOM }}"
     doc.add_paragraph()
     
     # 6. INCLINAÇÃO
     doc.add_paragraph("6. INCLINAÇÃO DO TERRENO", style=style_h)
-    adicionar_tabela_jinja(doc, 4, 
-        ["Faixa de Inclinação", "Área (m²)", "% da Área", "Notas"],
+    adicionar_tabela_jinja(doc, 5, 
+        ["Faixa de Inclinação", "Legenda", "Área (m²)", "% da Área", "Notas"],
         "TABELA_INCLINACAO_LIST",
-        ["row.faixa", "row.area", "row.perc", "row.notas"]
+        ["row.faixa", "{% cellbg row.cor %} ", "row.area", "row.perc", "row.notas"],
+        style="Normal Table"
     )
     doc.add_paragraph()
+    
+    # 7. NOTAS E CONDICIONANTES TÉCNICAS
+    doc.add_paragraph("7. NOTAS E CONDICIONANTES TÉCNICAS", style=style_h)
+    doc.add_paragraph("{% for nota in LISTA_NOTAS_ANEXO_ARRAY %}• {{ nota.texto }}\n{% endfor %}")
+    doc.add_paragraph("{% for nota in LISTA_CONDICIONANTES_ARRAY %}• {{ nota.texto }}\n{% endfor %}")
+    doc.add_paragraph("{% for nota in LISTA_RESTRICOES_ARRAY %}• {{ nota.texto }}\n{% endfor %}")
+    doc.add_paragraph("{% for nota in LISTA_NOTAS_ARRAY %}• {{ nota.texto }}\n{% endfor %}")
+    doc.add_paragraph()
 
-    # 7. MAPAS / IMAGENS (Anexos futuros mantendo a formatação padrão)
-    p_img = doc.add_paragraph("7. MAPA DE SITUAÇÃO / ANEXOS GRAFICOS", style=style_h)
+    # 8. MAPAS / IMAGENS
+    p_img = doc.add_paragraph("8. MAPA DE SITUAÇÃO / ANEXOS GRAFICOS", style=style_h)
     p_img_placeholder = doc.add_paragraph()
     p_img_placeholder.alignment = WD_ALIGN_PARAGRAPH.CENTER
     # Tag auxiliar inline pro docxtpl (podemos injetar objeto InlineImage se tiver {{ IMAGEM_MAPA }})
@@ -146,10 +164,12 @@ def construir_modelo_zoni(doc):
     
 def main():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    input_file = os.path.join(base_dir, "2024.005135_1 - RAPS - Loteamento Cidade dos Lagos.docx")
     out_dir = os.path.join(base_dir, "infraestrutura", "relatorios", "modelos")
     os.makedirs(out_dir, exist_ok=True)
     out_file = os.path.join(out_dir, "modelo_relatorio.docx")
+    
+    # Usa o próprio documento atual como base de cabeçalhos
+    input_file = out_file if os.path.exists(out_file) else None
     
     print(f"Lendo base corporativa: {input_file}")
     doc = Document(input_file)

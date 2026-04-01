@@ -57,14 +57,13 @@ def mapear_contexto_html_para_docx(contexto: Dict[str, Any]) -> Dict[str, Any]:
     for tag_key in ["LISTA_NOTAS_ANEXO", "LISTA_CONDICIONANTES", "LISTA_RESTRICOES", "LISTA_NOTAS"]:
         html_val = contexto.get(tag_key)
         if html_val and isinstance(html_val, str):
-            # Limpeza rápida e crua de <li class="">Texto</li> para array de strings do Word
             linhas = html_val.replace("</li>", "").split("<li>")
             linhas_limpas = [linha.replace("<b>", "").replace("</b>", "").strip() for linha in linhas if linha.strip()]
-            ctx_docx[tag_key + "_ARRAY"] = linhas_limpas
+            ctx_docx[tag_key + "_ARRAY"] = [{"texto": l} for l in linhas_limpas]
         elif isinstance(html_val, list):
-            ctx_docx[tag_key + "_ARRAY"] = html_val
+            ctx_docx[tag_key + "_ARRAY"] = [{"texto": l} for l in html_val]
         else:
-            ctx_docx[tag_key + "_ARRAY"] = []
+            ctx_docx[tag_key + "_ARRAY"] = [{"texto": "Nenhuma nota registrada."}]
 
     # Construção de tabelas dinâmicas baseadas nos dados originais
     ctx_docx["DADOS_CADASTRAIS_LIST"] = []
@@ -95,12 +94,80 @@ def mapear_contexto_html_para_docx(contexto: Dict[str, Any]) -> Dict[str, Any]:
         faixas = incl_dict.get("faixas", [])
         for f in faixas:
             if isinstance(f, dict):
+                cor_hex = str(f.get("cor", "#FFFFFF")).replace("#", "").upper()
+                if not cor_hex or cor_hex == "FFFFFF": cor_hex = "F2F2F2"
                 ctx_docx["TABELA_INCLINACAO_LIST"].append({
                     "faixa": str(f.get("faixa", "-")),
                     "area": "{:.2f}".format(float(f.get("area_m2", 0))),
                     "perc": "{:.1f}".format(float(f.get("percentual", 0))),
-                    "notas": "APP" if bool(f.get("app")) else "-"
+                    "notas": "APP" if bool(f.get("app")) else "-",
+                    "cor": cor_hex
                 })
+                
+    # Zonas Multiplas
+    ctx_docx["TABELA_ZONAS_LIST"] = []
+    zr = contexto.get("zoneamento_resolvido", {})
+    zonas_res = zr.get("zonas", [])
+    if zonas_res:
+        for z in zonas_res:
+            param = z.get("parametros", {})
+            extras = param.get("extras", {})
+            ctx_docx["TABELA_ZONAS_LIST"].append({
+                "codigo": str(z.get("codigo") or ""),
+                "area": "{:.2f}".format(float(z.get("area_m2", 0))),
+                "perc": "{:.1f}".format(float(z.get("percentual_area", 0))),
+                "ca_max": str(param.get("CA_max") or "-"),
+                "ca_bas": str(param.get("CA_bas") or "-"),
+                "tps": str(param.get("Tperm") or "-"),
+                "tos": str(param.get("Tocup") or "-"),
+                "np_bas": str(param.get("Npav_bas") or "-"),
+                "np_max": str(param.get("Npav_max") or "-"),
+                "rf": str(extras.get("RF") or "-")
+            })
+    else:
+        z_nome = contexto.get("zoneamento", {}).get("zona", "-")
+        ctx_docx["TABELA_ZONAS_LIST"].append({
+            "codigo": str(z_nome),
+            "area": str(contexto.get("area_lote_m2", "-")),
+            "perc": "100.0",
+            "ca_max": "-", "ca_bas": "-", "tps": "-", "tos": "-", "np_bas": "-", "np_max": "-", "rf": "-"
+        })
+
+    # Risco Geológico
+    risco = contexto.get("risco", {})
+    classe_inund = str(risco.get("classe_inundacao") or "Não classificado")
+    classe_mov = str(risco.get("classe_movimento_massa") or "Não classificado")
+    def c_risco(c):
+        s = c.upper()
+        if "ALTA" in s or "ALTO" in s or s in ("A", "4"): return ("ALTA", "FFCCCC", "Estudo hidrológico / geotécnico obrigatório e elevação/contenção mandatória.")
+        if "MÉDIA" in s or "MEDIA" in s or s in ("M", "3"): return ("MÉDIA", "FFEB9C", "Exige investigação geotécnica preliminar.")
+        if "BAIXA" in s or "BAIXO" in s or s in ("B", "2"): return ("BAIXA", "CCFFCC", "Padrão construtivo convencional aceito.")
+        if "MUITO BAIXA" in s or "MB" in s or s == "1": return ("MUITO BAIXA", "CCFFCC", "Padrão.")
+        return ("Não Definido", "F2F2F2", "-")
+
+    gi, ci, ri = c_risco(classe_inund)
+    gm, cm, rm = c_risco(classe_mov)
+
+    ctx_docx["RISCO_INUND_CLASSE"] = "Suscetibilidade" if "ALTA" in gi or "MÉDIA" in gi else "Baixo Aconselhado"
+    ctx_docx["RISCO_INUND_GRAU"] = gi
+    ctx_docx["RISCO_INUND_COR"] = ci
+    ctx_docx["RISCO_INUND_RECOM"] = ri
+    ctx_docx["RISCO_MOV_CLASSE"] = "Deslizamento e Massa" if "ALTA" in gm or "MÉDIA" in gm else "Baixo Aconselhado"
+    ctx_docx["RISCO_MOV_GRAU"] = gm
+    ctx_docx["RISCO_MOV_COR"] = cm
+    ctx_docx["RISCO_MOV_RECOM"] = rm
+
+    # APPs
+    amb = contexto.get("ambiente", {})
+    em_nuic = amb.get("em_app_faixa_nuic")
+    ctx_docx["APP_FAIXA_STATUS"] = "Presente" if em_nuic else "Ausente"
+    ctx_docx["APP_FAIXA_LARGURA"] = str(amb.get("largura_faixa_m") or "-")
+    ctx_docx["APP_FAIXA_OBS"] = "; ".join([str(n) for n in amb.get("notas", [])][:2]) if em_nuic else "Sem rio mapeado no lote."
+    em_mangue = amb.get("em_app_manguezal")
+    ctx_docx["APP_MANGUE_STATUS"] = "Presente" if em_mangue else "Ausente"
+    nota_mangue = amb.get("notas", [])[2:] if len(amb.get("notas", [])) > 2 else []
+    ctx_docx["APP_MANGUE_OBS"] = "; ".join([str(n) for n in nota_mangue]) if em_mangue and nota_mangue else ("Manguezal detectado." if em_mangue else "Fora de manguezais.")
+
                 
     # Variáveis avulsas comuns (Data, Tipo Análise)
     import datetime

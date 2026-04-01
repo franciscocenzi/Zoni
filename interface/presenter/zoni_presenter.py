@@ -356,9 +356,11 @@ class ZoniPresenter:
             return
 
         if not self.lotes_selecionados:
-            self.iface.messageBar().pushWarning(
+            from qgis.PyQt.QtWidgets import QMessageBox
+            QMessageBox.warning(
+                self.iface.mainWindow(),
                 "Zôni v2",
-                "Nenhum lote foi selecionado. Selecione lotes na camada 'Lotes' ou use o botão 'Selecionar lote(s)'.",
+                "Nenhum lote foi selecionado.\n\nSelecione pelo menos um lote na camada 'Lotes' ou use o botão 'Selecionar lote(s)' antes de Analisar.",
             )
             return
 

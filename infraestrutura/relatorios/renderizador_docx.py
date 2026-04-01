@@ -1,218 +1,498 @@
 """
-Renderizador nativo DOCX para Zôni v2 utilizando docxtpl.
-Garanti a fidelidade visual utilizando um modelo Microsoft Word base.
+Renderizador nativo DOCX para Zôni v2.
+Gera o relatório programaticamente via python-docx, preservando o cabeçalho/rodapé corporativo.
+Sem Jinja2/docxtpl — evita todos os problemas de parsing de templates.
 """
 import os
 import sys
 import subprocess
-from typing import Dict, Any
+from datetime import datetime
+from typing import Dict, Any, List
+
 from qgis.core import QgsMessageLog, Qgis
 
-# Auto-instalador de dependência nativa do Plugin
+# ──────────────────────────────────────────────────────────────────
+# Dependências
+# ──────────────────────────────────────────────────────────────────
 try:
-    from docxtpl import DocxTemplate
+    from docx import Document
+    from docx.shared import Pt, Cm, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
 except ImportError:
-    QgsMessageLog.logMessage("Módulo docxtpl ausente. Iniciando instalação silenciosa no QGIS...", "Zôni v2", Qgis.Warning)
+    QgsMessageLog.logMessage("python-docx ausente. Instalando...", "Zôni v2", Qgis.Warning)
     try:
-        # sys.executable retorna o qgis-bin.exe no Windows
         python_exe = os.path.join(sys.prefix, 'python.exe')
         if not os.path.exists(python_exe):
             python_exe = "python"
-        subprocess.check_call([python_exe, "-m", "pip", "install", "docxtpl"])
-        from docxtpl import DocxTemplate
-        QgsMessageLog.logMessage("docxtpl instalado com sucesso.", "Zôni v2", Qgis.Success)
+        subprocess.check_call([python_exe, "-m", "pip", "install", "python-docx"])
+        from docx import Document
+        from docx.shared import Pt, Cm, RGBColor
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+        from docx.oxml.ns import qn
+        from docx.oxml import OxmlElement
     except Exception as e:
-        QgsMessageLog.logMessage(f"Falha ao instalar docxtpl via pip: {e}", "Zôni v2", Qgis.Critical)
+        QgsMessageLog.logMessage(f"Falha ao instalar python-docx: {e}", "Zôni v2", Qgis.Critical)
 
-def limpar_string(valor: Any) -> str:
-    """Limpa a string removendo quebras vazias que possam quebrar o layout do Word."""
-    if valor is None:
+
+# ──────────────────────────────────────────────────────────────────
+# Helpers de formatação
+# ──────────────────────────────────────────────────────────────────
+AZUL_ZONI = RGBColor(0x1F, 0x49, 0x7D)
+
+def _s(v) -> str:
+    """Converte None para '-', qualquer outro valor para string."""
+    if v is None or str(v).strip() in ("", "None", "none"):
         return "-"
-    return str(valor).strip()
+    return str(v).strip()
 
-def mapear_contexto_html_para_docx(contexto: Dict[str, Any]) -> Dict[str, Any]:
+def _fmt_float(v, dec=2) -> str:
+    try:
+        f = float(str(v).replace(",", "."))
+        if f == int(f):
+            return f"{int(f):,}".replace(",", ".")
+        return f"{f:,.{dec}f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except Exception:
+        return _s(v)
+
+def _fmt_perc(v) -> str:
+    try:
+        f = float(str(v).replace(",", ".").replace("%", ""))
+        if 0 < f <= 1.0:
+            f *= 100
+        return f"{f:.1f}%".replace(".", ",")
+    except Exception:
+        return _s(v)
+
+def set_cell_color(cell, hex_color: str):
+    """Define a cor de fundo de uma célula (hex sem #)."""
+    tc = cell._tc
+    tcPr = tc.get_or_add_tcPr()
+    shd = OxmlElement('w:shd')
+    shd.set(qn('w:val'), 'clear')
+    shd.set(qn('w:color'), 'auto')
+    shd.set(qn('w:fill'), hex_color.replace("#", "").upper())
+    # Remove shd anterior se existir
+    for old in tcPr.findall(qn('w:shd')):
+        tcPr.remove(old)
+    tcPr.append(shd)
+
+def _add_heading(doc, texto: str, nivel=1):
+    """Adiciona um parágrafo de seção estilizado."""
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(6)
+    p.paragraph_format.space_after = Pt(2)
+    run = p.add_run(texto)
+    run.bold = True
+    run.font.size = Pt(10)
+    run.font.color.rgb = AZUL_ZONI
+    return p
+
+def _add_table(doc, headers: List[str], rows_data: List[List[str]], widths_cm: List[float] = None):
     """
-    Traduz a saída focada em HTML antigo para variáveis planas aceitas pelo Jinja do docxtpl.
-    Remove tags HTML brutas <tr>, <td>, <span> de listas e as transforma em dicionários estruturados.
-    NOTA: Isso depende de injetar listas corretas de dicionários para iterar no Word.
+    Adiciona uma tabela com cabeçalho azul e linhas de dados.
+    rows_data: lista de listas de strings.
     """
-    ctx_docx = {}
-    
-    # Repassa variáveis escalares diretas
-    for k, v in contexto.items():
-        if isinstance(v, (str, int, float, bool)):
-            ctx_docx[k] = limpar_string(v)
+    n_cols = len(headers)
+    n_rows = 1 + len(rows_data) if rows_data else 2
+    table = doc.add_table(rows=n_rows, cols=n_cols)
+    table.style = 'Table Grid'
+    table.autofit = False
 
-    # Identificações - Dicionário de Lote base
-    # (Pega o fallback em string caso já esteja montado, mas o DocxTpl lida com formatadores puros)
-    ctx_docx["N_LOTES"] = limpar_string(contexto.get("n_lotes"))
-    ctx_docx["AREA_LOTE"] = limpar_string(contexto.get("area_lote_m2"))
-    ctx_docx["N_TESTADAS"] = limpar_string(contexto.get("n_testadas"))
-    ctx_docx["TESTADA_PRINCIPAL"] = limpar_string(contexto.get("testada_principal"))
-    
-    # Aqui precisamos receber os hashes processados originais se existirem 
-    # ou usar os blocos em listas. Se o construtor já montou listas simples, passamos limpo:
-    # EX: "LISTA_CONDICIONANTES" foi montado como strings com <li>. Precisamos limpar as tags <li>.
-    
-    for tag_key in ["LISTA_NOTAS_ANEXO", "LISTA_CONDICIONANTES", "LISTA_RESTRICOES", "LISTA_NOTAS"]:
-        html_val = contexto.get(tag_key)
-        if html_val and isinstance(html_val, str):
-            linhas = html_val.replace("</li>", "").split("<li>")
-            linhas_limpas = [linha.replace("<b>", "").replace("</b>", "").strip() for linha in linhas if linha.strip()]
-        elif isinstance(html_val, list):
-            linhas_limpas = [str(l) for l in html_val]
-        else:
-            linhas_limpas = []
-        ctx_docx[tag_key + "_ARRAY"] = [{"texto": l} for l in linhas_limpas]
-        # Versão pré-montada como string simples com bullet points (sem loops Jinja)
-        if linhas_limpas:
-            ctx_docx[tag_key + "_BULLETS"] = "\n".join(f"• {l}" for l in linhas_limpas)
-        else:
-            ctx_docx[tag_key + "_BULLETS"] = "-"
+    # Cabeçalho
+    hdr = table.rows[0]
+    for i, h in enumerate(headers):
+        cell = hdr.cells[i]
+        cell.text = h
+        set_cell_color(cell, "1F497D")  # azul corporativo
+        for p in cell.paragraphs:
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for r in p.runs:
+                r.font.bold = True
+                r.font.size = Pt(8)
+                r.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
 
-    # Construção de tabelas dinâmicas baseadas nos dados originais
-    ctx_docx["DADOS_CADASTRAIS_LIST"] = []
-    ident_list = contexto.get("identificacao")
-    if ident_list:
-        ident_list = ident_list if isinstance(ident_list, list) else [ident_list]
-        for d in ident_list:
-            ctx_docx["DADOS_CADASTRAIS_LIST"].append({
-                "proprietario": limpar_string(d.get("proprietario")),
-                "inscricao": str(d.get("inscricao_imobiliaria") or "-") + " / " + str(d.get("numero_cadastral") or "-"),
-                "endereco": str(d.get("logradouro", "")) + ", " + str(d.get("numero", "")),
-                "loteamento": str(d.get("loteamento", "-")) + " Qd:" + str(d.get("quadra", "-")) + " Lt:" + str(d.get("lote", "-")),
-                "area": str(d.get("area_m2") or "-")
-            })
-
-    ctx_docx["TABELA_TESTADAS_LIST"] = []
-    segmentos = contexto.get("segmentos_limites", [])
-    for s in segmentos:
-        if isinstance(s, dict):
-            ctx_docx["TABELA_TESTADAS_LIST"].append({
-                "limite": str(s.get("logradouro") or s.get("tipo_limite") or s.get("confrontante") or "-"),
-                "comprimento": "{:.2f}".format(float(s.get("comprimento_m", 0)))
-            })
-            
-    ctx_docx["TABELA_INCLINACAO_LIST"] = []
-    incl_dict = contexto.get("inclinacao", {})
-    if isinstance(incl_dict, dict):
-        faixas = incl_dict.get("faixas", [])
-        for f in faixas:
-            if isinstance(f, dict):
-                cor_hex = str(f.get("cor", "#FFFFFF")).replace("#", "").upper()
-                if not cor_hex or cor_hex == "FFFFFF": cor_hex = "F2F2F2"
-                ctx_docx["TABELA_INCLINACAO_LIST"].append({
-                    "faixa": str(f.get("faixa", "-")),
-                    "area": "{:.2f}".format(float(f.get("area_m2", 0))),
-                    "perc": "{:.1f}".format(float(f.get("percentual", 0))),
-                    "notas": "APP" if bool(f.get("app")) else "-",
-                    "cor": cor_hex
-                })
-                
-    # Zonas Multiplas
-    ctx_docx["TABELA_ZONAS_LIST"] = []
-    zr = contexto.get("zoneamento_resolvido", {})
-    zonas_res = zr.get("zonas", [])
-    if zonas_res:
-        for z in zonas_res:
-            param = z.get("parametros", {})
-            extras = param.get("extras", {})
-            ctx_docx["TABELA_ZONAS_LIST"].append({
-                "codigo": str(z.get("codigo") or ""),
-                "area": "{:.2f}".format(float(z.get("area_m2", 0))),
-                "perc": "{:.1f}".format(float(z.get("percentual_area", 0))),
-                "ca_max": str(param.get("CA_max") or "-"),
-                "ca_bas": str(param.get("CA_bas") or "-"),
-                "tps": str(param.get("Tperm") or "-"),
-                "tos": str(param.get("Tocup") or "-"),
-                "np_bas": str(param.get("Npav_bas") or "-"),
-                "np_max": str(param.get("Npav_max") or "-"),
-                "rf": str(extras.get("RF") or "-")
-            })
+    # Dados
+    if rows_data:
+        for ri, row_vals in enumerate(rows_data):
+            row = table.rows[ri + 1]
+            bg = "F2F7FF" if ri % 2 == 0 else "FFFFFF"
+            for ci, val in enumerate(row_vals):
+                if ci < n_cols:
+                    row.cells[ci].text = _s(val)
+                    set_cell_color(row.cells[ci], bg)
+                    for p in row.cells[ci].paragraphs:
+                        for r in p.runs:
+                            r.font.size = Pt(8)
     else:
-        z_nome = contexto.get("zoneamento", {}).get("zona", "-")
-        ctx_docx["TABELA_ZONAS_LIST"].append({
-            "codigo": str(z_nome),
-            "area": str(contexto.get("area_lote_m2", "-")),
-            "perc": "100.0",
-            "ca_max": "-", "ca_bas": "-", "tps": "-", "tos": "-", "np_bas": "-", "np_max": "-", "rf": "-"
-        })
+        row = table.rows[1]
+        row.cells[0].text = "Sem dados."
 
-    # Risco Geológico
-    risco = contexto.get("risco", {})
-    classe_inund = str(risco.get("classe_inundacao") or "Não classificado")
-    classe_mov = str(risco.get("classe_movimento_massa") or "Não classificado")
-    def c_risco(c):
-        s = c.upper()
-        if "ALTA" in s or "ALTO" in s or s in ("A", "4"): return ("ALTA", "FFCCCC", "Estudo hidrológico / geotécnico obrigatório e elevação/contenção mandatória.")
-        if "MÉDIA" in s or "MEDIA" in s or s in ("M", "3"): return ("MÉDIA", "FFEB9C", "Exige investigação geotécnica preliminar.")
-        if "BAIXA" in s or "BAIXO" in s or s in ("B", "2"): return ("BAIXA", "CCFFCC", "Padrão construtivo convencional aceito.")
-        if "MUITO BAIXA" in s or "MB" in s or s == "1": return ("MUITO BAIXA", "CCFFCC", "Padrão.")
-        return ("Não Definido", "F2F2F2", "-")
+    # Larguras
+    if widths_cm:
+        for row in table.rows:
+            for ci, cell in enumerate(row.cells):
+                if ci < len(widths_cm):
+                    cell.width = Cm(widths_cm[ci])
 
-    gi, ci, ri = c_risco(classe_inund)
-    gm, cm, rm = c_risco(classe_mov)
+    return table
 
-    ctx_docx["RISCO_INUND_CLASSE"] = "Suscetibilidade" if "ALTA" in gi or "MÉDIA" in gi else "Baixo Aconselhado"
-    ctx_docx["RISCO_INUND_GRAU"] = gi
-    ctx_docx["RISCO_INUND_COR"] = ci
-    ctx_docx["RISCO_INUND_RECOM"] = ri
-    ctx_docx["RISCO_MOV_CLASSE"] = "Deslizamento e Massa" if "ALTA" in gm or "MÉDIA" in gm else "Baixo Aconselhado"
-    ctx_docx["RISCO_MOV_GRAU"] = gm
-    ctx_docx["RISCO_MOV_COR"] = cm
-    ctx_docx["RISCO_MOV_RECOM"] = rm
 
-    # APPs
-    amb = contexto.get("ambiente", {})
+# ──────────────────────────────────────────────────────────────────
+# Construtores de seção
+# ──────────────────────────────────────────────────────────────────
+
+def _sec_dados_cadastrais(doc, ctx):
+    _add_heading(doc, "1. DADOS CADASTRAIS")
+    ident = ctx.get("identificacao") or {}
+    ident_list = ident if isinstance(ident, list) else [ident]
+    rows = []
+    for d in ident_list:
+        insc = _s(d.get("inscricao_imobiliaria"))
+        cad = _s(d.get("numero_cadastral"))
+        ids = " / ".join(x for x in [insc, cad] if x != "-") or "-"
+        logr = _s(d.get("logradouro"))
+        num = _s(d.get("numero", "S/N"))
+        bairro = _s(d.get("bairro"))
+        end_parts = []
+        if logr != "-": end_parts.append(f"{logr}, {num}")
+        if bairro != "-": end_parts.append(f"Bairro {bairro}")
+        endereco = " — ".join(end_parts) or "-"
+        lot = _s(d.get("loteamento"))
+        qd = _s(d.get("quadra"))
+        lt = _s(d.get("lote"))
+        lot_str = " | ".join(x for x in [
+            lot if lot != "-" else None,
+            f"Qd: {qd}" if qd != "-" else None,
+            f"Lt: {lt}" if lt != "-" else None
+        ] if x) or "-"
+        area = _fmt_float(d.get("area_m2")) if d.get("area_m2") else "-"
+        rows.append([_s(d.get("proprietario")), ids, endereco, lot_str, area])
+
+    _add_table(doc,
+        ["Proprietário", "Inscrição / Cad.", "Endereço", "Loteamento / Qd / Lt", "Área (m²)"],
+        rows, widths_cm=[4.5, 3.0, 4.5, 3.5, 2.5]
+    )
+    doc.add_paragraph()
+
+
+def _sec_testadas(doc, ctx):
+    _add_heading(doc, "2. LIMITES DO TERRENO (TESTADAS E DIVISAS)")
+    segs = ctx.get("segmentos_limites") or []
+    testadas_log = ctx.get("testadas_por_logradouro") or {}
+    confrontantes = ctx.get("confrontantes_por_proprietario") or {}
+
+    rows = []
+    if isinstance(testadas_log, dict) and testadas_log:
+        for log, comp in testadas_log.items():
+            rows.append([f"TESTADA — {log}", _fmt_float(comp)])
+    if isinstance(confrontantes, dict) and confrontantes:
+        for prop, comp in confrontantes.items():
+            rows.append([f"DIVISA — {prop}", _fmt_float(comp)])
+    if not rows and isinstance(segs, list):
+        for s in segs:
+            tipo = (s.get("tipo_limite") or "").upper()
+            log = _s(s.get("logradouro"))
+            conf = _s(s.get("confrontante"))
+            comp = _fmt_float(s.get("comprimento_m"))
+            if tipo == "TESTADA":
+                desc = f"TESTADA — {log}"
+            else:
+                desc = f"DIVISA — {conf}"
+            rows.append([desc, comp])
+
+    _add_table(doc,
+        ["Limite / Logradouro / Confrontante", "Comprimento (m)"],
+        rows, widths_cm=[13.5, 3.5]
+    )
+    doc.add_paragraph()
+
+
+def _sec_zoneamento(doc, ctx):
+    _add_heading(doc, "3. ZONEAMENTO INCIDENTE")
+    zr = ctx.get("zoneamento_resolvido") or {}
+    zonas = zr.get("zonas") or []
+    rows = []
+    if zonas:
+        for z in zonas:
+            param = z.get("parametros") or {}
+            extras = param.get("extras") or {}
+            rows.append([
+                _s(z.get("codigo")),
+                _fmt_float(z.get("area_m2")),
+                _fmt_float(z.get("percentual_area"), dec=1),
+                _fmt_float(param.get("CA_max")),
+                _fmt_float(param.get("CA_bas")),
+                _fmt_perc(param.get("Tperm")),
+                _fmt_perc(param.get("Tocup")),
+                _s(param.get("Npav_bas")),
+                _s(param.get("Npav_max")),
+                _s(extras.get("RF") or extras.get("RF_Sec")),
+            ])
+    else:
+        z_nome = (ctx.get("zoneamento") or {}).get("zona", "-")
+        indices = (ctx.get("indices") or {})
+        param = indices.get("parametros") or {}
+        extras = param.get("extras") or {}
+        rows.append([
+            z_nome, _fmt_float(ctx.get("area_lote_m2")), "100",
+            _fmt_float(param.get("CA_max")), _fmt_float(param.get("CA_bas")),
+            _fmt_perc(param.get("Tperm")), _fmt_perc(param.get("Tocup")),
+            _s(param.get("Npav_bas")), _s(param.get("Npav_max")),
+            _s(extras.get("RF") or extras.get("RF_Sec")),
+        ])
+
+    _add_table(doc,
+        ["Zona", "Área (m²)", "%", "CA máx", "CA bas", "TPS", "TOS", "Pav Bas", "Pav Máx", "Recuo Fr"],
+        rows, widths_cm=[2.2, 2.2, 1.4, 1.4, 1.4, 1.4, 1.4, 1.5, 1.5, 2.0]
+    )
+    doc.add_paragraph()
+
+
+def _sec_app(doc, ctx):
+    _add_heading(doc, "4. ÁREAS DE PRESERVAÇÃO PERMANENTE (APP)")
+    amb = ctx.get("ambiente") or {}
     em_nuic = amb.get("em_app_faixa_nuic")
-    ctx_docx["APP_FAIXA_STATUS"] = "Presente" if em_nuic else "Ausente"
-    ctx_docx["APP_FAIXA_LARGURA"] = str(amb.get("largura_faixa_m") or "-")
-    ctx_docx["APP_FAIXA_OBS"] = "; ".join([str(n) for n in amb.get("notas", [])][:2]) if em_nuic else "Sem rio mapeado no lote."
+    largura = _s(amb.get("largura_faixa_m"))
+    notas = amb.get("notas") or []
+    obs_nuic = "; ".join(notas[:2]) if em_nuic and notas else ("Sem curso d'água identificado." if not em_nuic else "")
     em_mangue = amb.get("em_app_manguezal")
-    ctx_docx["APP_MANGUE_STATUS"] = "Presente" if em_mangue else "Ausente"
-    nota_mangue = amb.get("notas", [])[2:] if len(amb.get("notas", [])) > 2 else []
-    ctx_docx["APP_MANGUE_OBS"] = "; ".join([str(n) for n in nota_mangue]) if em_mangue and nota_mangue else ("Manguezal detectado." if em_mangue else "Fora de manguezais.")
+    obs_mangue = "; ".join(notas[2:4]) if em_mangue and len(notas) > 2 else ("Sem manguezal identificado." if not em_mangue else "Manguezal detectado.")
 
-                
-    # Variáveis avulsas comuns (Data, Tipo Análise)
-    import datetime
-    ctx_docx["TIPO_ANALISE"] = "Gleba Unificada" if contexto.get("area_gleba_unificada") else "Lote"
-    ctx_docx["DATA_COMPLETA"] = datetime.datetime.now().strftime("%d/%m/%Y")
+    status_nuic = "Presente" if em_nuic else "Ausente"
+    status_mangue = "Presente" if em_mangue else "Ausente"
 
-    # Aqui podemos passar o restante bruto do contexto para o template,
-    # as variáveis que tem "_bruto" (como as testadas como lista)
-    return {**contexto, **ctx_docx}
+    _add_table(doc,
+        ["Tipo de APP", "Situação", "Informações"],
+        [
+            ["Faixa Marginal (NUIC)", f"{status_nuic} — {largura} m", obs_nuic],
+            ["Manguezal", status_mangue, obs_mangue],
+        ],
+        widths_cm=[4.0, 3.5, 10.5]
+    )
+    doc.add_paragraph()
+
+
+def _sec_risco(doc, ctx):
+    _add_heading(doc, "5. RISCOS GEOAMBIENTAIS")
+    risco = ctx.get("risco") or {}
+    classe_inund = _s(risco.get("classe_inundacao"))
+    classe_mov = _s(risco.get("classe_movimento_massa"))
+
+    COR_MAP = {
+        "ALTA":       ("FFCCCC", "Área com alta suscetibilidade. Exige EHH detalhado ou laudo geotécnico."),
+        "ALTA":       ("FFCCCC", "Área com alta suscetibilidade. Exige EHH detalhado ou laudo geotécnico."),
+        "MÉDIA":      ("FFEB9C", "Suscetibilidade média. Recomenda-se investigação preliminar."),
+        "MEDIA":      ("FFEB9C", "Suscetibilidade média. Recomenda-se investigação preliminar."),
+        "BAIXA":      ("CCFFCC", "Baixa suscetibilidade. Procedimentos construtivos padrão."),
+        "MUITO BAIXA":("CCFFCC", "Muito baixa suscetibilidade."),
+    }
+
+    def _dados_risco(classe):
+        for k, (cor, recom) in COR_MAP.items():
+            if k in classe.upper():
+                return cor, classe, recom
+        return "F2F2F2", classe if classe != "-" else "Não classificado", "-"
+
+    cor_i, grau_i, recom_i = _dados_risco(classe_inund)
+    cor_m, grau_m, recom_m = _dados_risco(classe_mov)
+
+    table = doc.add_table(rows=3, cols=4)
+    table.style = 'Table Grid'
+    table.autofit = False
+
+    # Linha 0: cabeçalhos
+    table.rows[0].cells[0].merge(table.rows[0].cells[1])
+    table.rows[0].cells[0].text = "Suscetibilidade a Inundação"
+    table.rows[0].cells[2].merge(table.rows[0].cells[3])
+    table.rows[0].cells[2].text = "Suscetibilidade a Movimentos de Massa"
+    for cell in [table.rows[0].cells[0], table.rows[0].cells[2]]:
+        set_cell_color(cell, "1F497D")
+        for p in cell.paragraphs:
+            for r in p.runs:
+                r.font.bold = True; r.font.size = Pt(9)
+                r.font.color.rgb = RGBColor(255, 255, 255)
+
+    # Linha 1: cor + grau
+    table.rows[1].cells[0].text = ""  # célula colorida
+    set_cell_color(table.rows[1].cells[0], cor_i)
+    table.rows[1].cells[1].text = grau_i
+    for r in table.rows[1].cells[1].paragraphs[0].runs:
+        r.font.bold = True; r.font.size = Pt(10)
+
+    table.rows[1].cells[2].text = ""  # célula colorida
+    set_cell_color(table.rows[1].cells[2], cor_m)
+    table.rows[1].cells[3].text = grau_m
+    for r in table.rows[1].cells[3].paragraphs[0].runs:
+        r.font.bold = True; r.font.size = Pt(10)
+
+    # Linha 2: recomendações
+    table.rows[2].cells[0].merge(table.rows[2].cells[1])
+    table.rows[2].cells[0].text = recom_i
+    table.rows[2].cells[2].merge(table.rows[2].cells[3])
+    table.rows[2].cells[2].text = recom_m
+    set_cell_color(table.rows[2].cells[0], "FFF9E6")
+    set_cell_color(table.rows[2].cells[2], "FFF9E6")
+
+    for row in table.rows:
+        for ci, cell in enumerate(row.cells):
+            w = Cm(1.0) if ci in (0, 2) else Cm(7.5)
+            cell.width = w
+
+    doc.add_paragraph()
+
+
+def _sec_inclinacao(doc, ctx):
+    _add_heading(doc, "6. INCLINAÇÃO DO TERRENO")
+    incl = ctx.get("inclinacao") or {}
+    faixas = incl.get("faixas") or [] if isinstance(incl, dict) else []
+
+    if not faixas:
+        doc.add_paragraph(incl.get("mensagem", "Análise de inclinação não disponível.") if isinstance(incl, dict) else "Análise de inclinação não disponível.")
+        doc.add_paragraph()
+        return
+
+    n_cols = 5
+    table = doc.add_table(rows=1 + len(faixas), cols=n_cols)
+    table.style = 'Table Grid'
+    table.autofit = False
+
+    hdrs = ["Faixa de Inclinação", "Cor", "Área (m²)", "% da Área", "Notas"]
+    hdr_cells = table.rows[0].cells
+    for i, h in enumerate(hdrs):
+        hdr_cells[i].text = h
+        set_cell_color(hdr_cells[i], "1F497D")
+        for p in hdr_cells[i].paragraphs:
+            for r in p.runs:
+                r.font.bold = True; r.font.size = Pt(8)
+                r.font.color.rgb = RGBColor(255, 255, 255)
+
+    for ri, f in enumerate(faixas):
+        row = table.rows[ri + 1]
+        cor_hex = str(f.get("cor", "#CCCCCC")).replace("#", "").upper()
+        app_flag = "APP" if f.get("app") else "-"
+        row.cells[0].text = _s(f.get("faixa"))
+        row.cells[1].text = ""  # célula colorida
+        set_cell_color(row.cells[1], cor_hex)
+        row.cells[2].text = _fmt_float(f.get("area_m2"))
+        row.cells[3].text = _fmt_float(f.get("percentual"), dec=1) + "%"
+        row.cells[4].text = app_flag
+        bg = "F2F7FF" if ri % 2 == 0 else "FFFFFF"
+        for ci in [0, 2, 3, 4]:
+            set_cell_color(row.cells[ci], bg)
+        for cell in row.cells:
+            for p in cell.paragraphs:
+                for r in p.runs:
+                    r.font.size = Pt(8)
+
+    widths = [4.5, 1.2, 3.0, 2.5, 2.0]
+    for row in table.rows:
+        for ci, cell in enumerate(row.cells):
+            if ci < len(widths):
+                cell.width = Cm(widths[ci])
+
+    doc.add_paragraph()
+
+
+def _sec_notas(doc, ctx):
+    _add_heading(doc, "7. NOTAS E CONDICIONANTES TÉCNICAS")
+    # Reutiliza a lógica do HTML original para montar as listas
+    try:
+        from infraestrutura.relatorios.renderizador_html import (
+            _montar_listas_notas_separadas
+        )
+        listas = _montar_listas_notas_separadas(ctx)
+    except Exception:
+        listas = {}
+
+    def _add_lista(titulo, chave, fallback):
+        html = listas.get(chave, "")
+        if html and isinstance(html, str):
+            import re
+            itens = re.findall(r'<li[^>]*>(.*?)</li>', html, re.S)
+            itens = [re.sub('<[^>]+>', '', i).strip() for i in itens if i.strip()]
+        else:
+            itens = []
+        p = doc.add_paragraph()
+        p.add_run(titulo).bold = True
+        if itens:
+            for item in itens:
+                b = doc.add_paragraph(style='List Bullet')
+                b.add_run(item).font.size = Pt(9)
+        else:
+            doc.add_paragraph(fallback).runs[0].font.size = Pt(9)
+
+    _add_lista("Notas Técnicas e Legislativas:", "LISTA_NOTAS_ANEXO", "Nenhuma nota específica aplicada.")
+    _add_lista("Condicionantes:", "LISTA_CONDICIONANTES", "Nenhuma condicionante identificada.")
+    _add_lista("Restrições e Pendências:", "LISTA_RESTRICOES", "Nenhuma restrição crítica identificada.")
+    doc.add_paragraph()
+
+
+def _sec_mapa(doc):
+    _add_heading(doc, "8. MAPA DE SITUAÇÃO / ANEXOS GRÁFICOS")
+    p = doc.add_paragraph("[Mapa será inserido futuramente]")
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p.runs[0].italic = True
+    p.runs[0].font.size = Pt(9)
+
+
+# ──────────────────────────────────────────────────────────────────
+# Classe principal
+# ──────────────────────────────────────────────────────────────────
 
 class RenderizadorDOCX:
-    """Fachada para geração do relatório DOCX nativo."""
+    """Gera o relatório DOCX programaticamente usando python-docx."""
 
     def __init__(self):
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
         self.modelo_path = os.path.join(self.base_dir, "modelos", "modelo_relatorio.docx")
 
     def renderizar_e_salvar(self, contexto: dict, caminho_saida: str) -> tuple:
-        """
-        Lê o modelo base modelo_relatorio.docx, injeta os dados do contexto
-        e salva no caminho de saída.
-        """
-        if 'docxtpl' not in sys.modules:
-            QgsMessageLog.logMessage("Erro: Dependência docxtpl não foi instalada com sucesso.", "Zôni v2", Qgis.Critical)
-            return False, "Dependência 'docxtpl' não está instalada ou falhou ao carregar."
-
-        if not os.path.exists(self.modelo_path):
-            QgsMessageLog.logMessage(f"Modelo não encontrado: {self.modelo_path}", "Zôni v2", Qgis.Critical)
-            return False, f"Arquivo modelo não encontrado em:\n{self.modelo_path}"
-            
         try:
-            doc = DocxTemplate(self.modelo_path)
-            # Pré processamento para converter campos de UI para Jinja do Word
-            ctx_pronto = mapear_contexto_html_para_docx(contexto)
-            
-            doc.render(ctx_pronto)
+            # Abre o documento base para herdar cabeçalho/rodapé corporativo
+            if os.path.exists(self.modelo_path):
+                doc = Document(self.modelo_path)
+                # Limpa o corpo mantendo header/footer
+                for p in list(doc.paragraphs):
+                    p._element.getparent().remove(p._element)
+                for t in list(doc.tables):
+                    t._element.getparent().remove(t._element)
+            else:
+                doc = Document()
+
+            agora = datetime.now()
+            tipo = "Gleba Unificada" if contexto.get("area_gleba_unificada") else "Lote"
+
+            # Título
+            p = doc.add_paragraph()
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            r = p.add_run("RELATÓRIO TÉCNICO DE ANÁLISE URBANÍSTICA")
+            r.bold = True; r.font.size = Pt(13); r.font.color.rgb = AZUL_ZONI; r.underline = True
+
+            p2 = doc.add_paragraph()
+            p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            r2 = p2.add_run(tipo)
+            r2.bold = True; r2.font.size = Pt(11)
+
+            doc.add_paragraph(f"Emissão: {agora.strftime('%d/%m/%Y')} às {agora.strftime('%H:%M')}")
+            doc.add_paragraph()
+
+            # Seções
+            _sec_dados_cadastrais(doc, contexto)
+            _sec_testadas(doc, contexto)
+            _sec_zoneamento(doc, contexto)
+            _sec_app(doc, contexto)
+            _sec_risco(doc, contexto)
+            _sec_inclinacao(doc, contexto)
+            _sec_notas(doc, contexto)
+            _sec_mapa(doc)
+
             doc.save(caminho_saida)
-            QgsMessageLog.logMessage(f"Relatório gerado em: {caminho_saida}", "Zôni v2", Qgis.Success)
+            QgsMessageLog.logMessage(f"Relatório gerado: {caminho_saida}", "Zôni v2", Qgis.Success)
             return True, ""
         except Exception as e:
             QgsMessageLog.logMessage(f"Erro ao gerar DOCX: {e}", "Zôni v2", Qgis.Critical)
+            import traceback
+            QgsMessageLog.logMessage(traceback.format_exc(), "Zôni v2", Qgis.Critical)
             return False, str(e)
-

@@ -4,6 +4,12 @@ Todas as mudanças relevantes do plugin são documentadas aqui.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 ---
+## [2.0.1.010] — 2026-03-31
+### Corrigido
+- fix: Corrigir repeticao de linhas em tabela (uso de %tr for correto), larguras fixas de coluna e estilo visual aprimorado
+
+---
+
 ## [2.0.1.009] — 2026-03-31
 ### Documentação
 - docs: Adicionar CHANGELOG.md retroativo e auto-atualizacao no pre-commit via increment_version.py

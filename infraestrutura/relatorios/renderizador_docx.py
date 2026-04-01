@@ -81,22 +81,31 @@ def mapear_contexto_html_para_docx(contexto: Dict[str, Any]) -> Dict[str, Any]:
             })
 
     ctx_docx["TABELA_TESTADAS_LIST"] = []
-    testadas = contexto.get("testadas", [])
-    for t in testadas:
-        ctx_docx["TABELA_TESTADAS_LIST"].append({
-            "limite": str(t.get("identificador") or "-"),
-            "comprimento": str(t.get("medida_m", 0))
-        })
-        
+    segmentos = contexto.get("segmentos_limites", [])
+    for s in segmentos:
+        if isinstance(s, dict):
+            ctx_docx["TABELA_TESTADAS_LIST"].append({
+                "limite": str(s.get("logradouro") or s.get("tipo_limite") or s.get("confrontante") or "-"),
+                "comprimento": "{:.2f}".format(float(s.get("comprimento_m", 0)))
+            })
+            
     ctx_docx["TABELA_INCLINACAO_LIST"] = []
-    incl = contexto.get("inclinacao", [])
-    for i in incl:
-        ctx_docx["TABELA_INCLINACAO_LIST"].append({
-            "faixa": str(i.get("classe", "-")),
-            "area": "{:.2f}".format(float(i.get("area_m2", 0))),
-            "perc": "{:.1f}".format(float(i.get("porcentagem", 0))),
-            "notas": "APP" if "> 45" in str(i.get("classe", "")) else "-"
-        })
+    incl_dict = contexto.get("inclinacao", {})
+    if isinstance(incl_dict, dict):
+        faixas = incl_dict.get("faixas", [])
+        for f in faixas:
+            if isinstance(f, dict):
+                ctx_docx["TABELA_INCLINACAO_LIST"].append({
+                    "faixa": str(f.get("faixa", "-")),
+                    "area": "{:.2f}".format(float(f.get("area_m2", 0))),
+                    "perc": "{:.1f}".format(float(f.get("percentual", 0))),
+                    "notas": "APP" if bool(f.get("app")) else "-"
+                })
+                
+    # Variáveis avulsas comuns (Data, Tipo Análise)
+    import datetime
+    ctx_docx["TIPO_ANALISE"] = "Gleba Unificada" if contexto.get("area_gleba_unificada") else "Lote"
+    ctx_docx["DATA_COMPLETA"] = datetime.datetime.now().strftime("%d/%m/%Y")
 
     # Aqui podemos passar o restante bruto do contexto para o template,
     # as variáveis que tem "_bruto" (como as testadas como lista)

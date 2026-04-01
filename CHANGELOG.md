@@ -4,6 +4,12 @@ Todas as mudanças relevantes do plugin são documentadas aqui.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 ---
+## [2.0.1.012] — 2026-03-31
+### Corrigido
+- fix: Ajustar larguras de tabela para A4 (15,5cm util) e trocar paleta azul por tons de cinza
+
+---
+
 ## [2.0.1.011] — 2026-03-31
 ### Refatorado
 - refactor: Reescrever renderizador DOCX programatico com python-docx - elimina docxtpl e todos os problemas de parsing Jinja

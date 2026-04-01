@@ -59,11 +59,16 @@ def mapear_contexto_html_para_docx(contexto: Dict[str, Any]) -> Dict[str, Any]:
         if html_val and isinstance(html_val, str):
             linhas = html_val.replace("</li>", "").split("<li>")
             linhas_limpas = [linha.replace("<b>", "").replace("</b>", "").strip() for linha in linhas if linha.strip()]
-            ctx_docx[tag_key + "_ARRAY"] = [{"texto": l} for l in linhas_limpas]
         elif isinstance(html_val, list):
-            ctx_docx[tag_key + "_ARRAY"] = [{"texto": l} for l in html_val]
+            linhas_limpas = [str(l) for l in html_val]
         else:
-            ctx_docx[tag_key + "_ARRAY"] = [{"texto": "Nenhuma nota registrada."}]
+            linhas_limpas = []
+        ctx_docx[tag_key + "_ARRAY"] = [{"texto": l} for l in linhas_limpas]
+        # Versão pré-montada como string simples com bullet points (sem loops Jinja)
+        if linhas_limpas:
+            ctx_docx[tag_key + "_BULLETS"] = "\n".join(f"• {l}" for l in linhas_limpas)
+        else:
+            ctx_docx[tag_key + "_BULLETS"] = "-"
 
     # Construção de tabelas dinâmicas baseadas nos dados originais
     ctx_docx["DADOS_CADASTRAIS_LIST"] = []

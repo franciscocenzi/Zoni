@@ -42,19 +42,25 @@ def adicionar_tabela_jinja(doc, cols, row_headers, list_var_name, fields_mapped,
     hdr_cells = table.rows[0].cells
     for i, hc in enumerate(row_headers):
         hdr_cells[i].text = hc
-        # Negrito no cabeçalho
         for p in hdr_cells[i].paragraphs:
             for run in p.runs:
                 run.font.bold = True
                 
+    def _render_field(field):
+        """Envolve o campo em {{ }} a menos que já seja uma tag de bloco."""
+        f = field.strip()
+        if f.startswith('{%') or f.startswith('{{'):
+            return field
+        return '{{' + f + '}}'
+
     # Loop Jinja na primeira célula da linha 1
     row_cells = table.rows[1].cells
-    row_cells[0].text = f"{{% for row in {list_var_name} %}}{{{{{ fields_mapped[0] }}}}}"
+    row_cells[0].text = f"{{% for row in {list_var_name} %}}{_render_field(fields_mapped[0])}"
     for i in range(1, cols):
         if i == cols - 1:
-            row_cells[i].text = f"{{{{{ fields_mapped[i] }}}}}{{% endfor %}}"
+            row_cells[i].text = f"{_render_field(fields_mapped[i])}{{% endfor %}}"
         else:
-            row_cells[i].text = f"{{{{{ fields_mapped[i] }}}}}"
+            row_cells[i].text = f"{_render_field(fields_mapped[i])}"
     return table
 
 def construir_modelo_zoni(doc):
@@ -149,10 +155,9 @@ def construir_modelo_zoni(doc):
     
     # 7. NOTAS E CONDICIONANTES TÉCNICAS
     doc.add_paragraph("7. NOTAS E CONDICIONANTES TÉCNICAS", style=style_h)
-    doc.add_paragraph("{% for nota in LISTA_NOTAS_ANEXO_ARRAY %}• {{ nota.texto }}\n{% endfor %}")
-    doc.add_paragraph("{% for nota in LISTA_CONDICIONANTES_ARRAY %}• {{ nota.texto }}\n{% endfor %}")
-    doc.add_paragraph("{% for nota in LISTA_RESTRICOES_ARRAY %}• {{ nota.texto }}\n{% endfor %}")
-    doc.add_paragraph("{% for nota in LISTA_NOTAS_ARRAY %}• {{ nota.texto }}\n{% endfor %}")
+    doc.add_paragraph("{{ LISTA_NOTAS_ANEXO_BULLETS }}")
+    doc.add_paragraph("{{ LISTA_CONDICIONANTES_BULLETS }}")
+    doc.add_paragraph("{{ LISTA_RESTRICOES_BULLETS }}")
     doc.add_paragraph()
 
     # 8. MAPAS / IMAGENS

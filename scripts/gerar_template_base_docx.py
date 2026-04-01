@@ -49,10 +49,10 @@ def adicionar_tabela_jinja(doc, cols, row_headers, list_var_name, fields_mapped)
                 
     # Loop Jinja na primeira célula da linha 1
     row_cells = table.rows[1].cells
-    row_cells[0].text = f"{{% tr for row in {list_var_name} %}}{{{{{ fields_mapped[0] }}}}}"
+    row_cells[0].text = f"{{% for row in {list_var_name} %}}{{{{{ fields_mapped[0] }}}}}"
     for i in range(1, cols):
         if i == cols - 1:
-            row_cells[i].text = f"{{{{{ fields_mapped[i] }}}}}{{% tr endfor %}}"
+            row_cells[i].text = f"{{{{{ fields_mapped[i] }}}}}{{% endfor %}}"
         else:
             row_cells[i].text = f"{{{{{ fields_mapped[i] }}}}}"
     return table

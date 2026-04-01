@@ -4,6 +4,12 @@ Todas as mudanças relevantes do plugin são documentadas aqui.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 ---
+## [2.0.1.009] — 2026-03-31
+### Documentação
+- docs: Adicionar CHANGELOG.md retroativo e auto-atualizacao no pre-commit via increment_version.py
+
+---
+
 ## [2.0.1.008] — 2026-03-31
 ### Corrigido
 - fix: Corrigir error de Jinja - cellbg nao pode ser envolvido em {{ }}, notas convertidas para strings pre-montadas com bullets
